@@ -13,7 +13,22 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+      },
+      boxShadow: {
+        glow: 'var(--shadow-glow)',
+      },
       colors: {
+        warning: "hsl(var(--warning))",
+        terminal: {
+          bg: "hsl(var(--terminal-bg))",
+          text: "hsl(var(--terminal-text))",
+          prompt: "hsl(var(--terminal-prompt))",
+          error: "hsl(var(--terminal-error))",
+          dim: "hsl(var(--terminal-dim))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
