@@ -5,6 +5,11 @@ machine and persist your tests list to a JSON file.
 
 ## Run
 
+It starts automatically with `npm run dev` (via a Vite plugin in
+`server/vite-plugin.mjs`). No separate command needed.
+
+To run it standalone:
+
 ```bash
 node server/server.mjs
 ```
