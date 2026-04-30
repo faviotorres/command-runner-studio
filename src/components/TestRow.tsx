@@ -41,10 +41,10 @@ export function TestRow({ test, running, active, onRun, onEdit, onDelete }: Prop
       </div>
 
       <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-border hover:text-foreground" onClick={onEdit}>
+        <Button variant="ghost" size="icon" disabled={running} className="h-7 w-7 hover:bg-border hover:text-foreground disabled:opacity-40" onClick={onEdit}>
           <Pencil className="h-3.5 w-3.5" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-border hover:text-destructive" onClick={onDelete}>
+        <Button variant="ghost" size="icon" disabled={running} className="h-7 w-7 text-destructive hover:bg-border hover:text-destructive disabled:opacity-40" onClick={onDelete}>
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
       </div>
