@@ -9,6 +9,10 @@ export type TestsFile = {
   tests: Test[];
 };
 
+export type Settings = {
+  workingDir: string;
+};
+
 export type LogLine = {
   id: string;
   kind: 'info' | 'stdout' | 'stderr' | 'end';
