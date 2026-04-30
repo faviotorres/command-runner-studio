@@ -19,13 +19,10 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
   }, [lines]);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg shadow-glow">
+    <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
       <div className="flex items-center justify-between border-b border-border bg-card/60 px-4 py-2">
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-destructive/80" />
-          <span className="h-2.5 w-2.5 rounded-full bg-warning/80" />
-          <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-          <span className="ml-3 font-mono text-xs text-muted-foreground">
+          <span className="font-mono text-xs text-muted-foreground">
             console — {running ? 'running' : 'idle'}
           </span>
         </div>
