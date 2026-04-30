@@ -162,50 +162,8 @@ const Index = () => {
 
         {data && settings && (
           <>
-            {/* Working directory */}
-            <section className="mb-4 rounded-lg border border-border bg-card p-5">
-              <Label htmlFor="cwd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Working directory
-              </Label>
-              <div className="mt-2 flex items-center gap-2">
-                <FolderOpen className="h-4 w-4 shrink-0 text-primary" />
-                <Input
-                  id="cwd"
-                  value={settings.workingDir}
-                  onChange={(e) => persistSettings({ ...settings, workingDir: e.target.value })}
-                  className="font-mono"
-                  placeholder="/Users/me/projects/my-app"
-                />
-              </div>
-              <p className="mt-2 font-mono text-xs text-muted-foreground">
-                Commands are executed from this directory. Saved to{' '}
-                <code className="text-primary">server/settings.json</code>.
-              </p>
-            </section>
-
-            {/* Command template (multiline) */}
-            <section className="mb-8 rounded-lg border border-border bg-card p-5">
-              <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Command
-              </Label>
-              <div className="mt-2 flex items-start gap-2">
-                <span className="mt-2 font-mono text-primary">$</span>
-                <Textarea
-                  id="cmd"
-                  value={data.commandTemplate}
-                  onChange={(e) => setTemplate(e.target.value)}
-                  className="min-h-[120px] resize-y font-mono text-sm"
-                  placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
-                  spellCheck={false}
-                />
-              </div>
-              <p className="mt-2 font-mono text-xs text-muted-foreground">
-                Multi-line supported. Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
-              </p>
-            </section>
-
             <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
-              {/* Tests list */}
+              {/* LEFT: Tests list */}
               <section className="flex flex-col">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -250,32 +208,75 @@ const Index = () => {
                 </div>
               </section>
 
-              {/* Console */}
-              <section className="flex min-h-[60vh] flex-col">
-                <div className="mb-3 flex items-center justify-between">
-                  <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                    Output
-                  </h2>
-                  {running && (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={cancel}
-                      className="h-8 font-mono"
-                    >
-                      <Square className="mr-1 h-3.5 w-3.5 fill-current" /> Stop
-                    </Button>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <ConsoleOutput
-                    lines={lines}
-                    running={running}
-                    onClear={() => setLines([])}
-                  />
-                </div>
-              </section>
+              {/* RIGHT: working dir + command */}
+              <div className="space-y-4">
+                <section className="rounded-lg border border-border bg-card p-5">
+                  <Label htmlFor="cwd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                    Working directory
+                  </Label>
+                  <div className="mt-2 flex items-center gap-2">
+                    <FolderOpen className="h-4 w-4 shrink-0 text-primary" />
+                    <Input
+                      id="cwd"
+                      value={settings.workingDir}
+                      onChange={(e) => persistSettings({ ...settings, workingDir: e.target.value })}
+                      className="font-mono"
+                      placeholder="/Users/me/projects/my-app"
+                    />
+                  </div>
+                  <p className="mt-2 font-mono text-xs text-muted-foreground">
+                    Commands are executed from this directory. Saved to{' '}
+                    <code className="text-primary">server/settings.json</code>.
+                  </p>
+                </section>
+
+                <section className="rounded-lg border border-border bg-card p-5">
+                  <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                    Command
+                  </Label>
+                  <div className="mt-2 flex items-start gap-2">
+                    <span className="mt-2 font-mono text-primary">$</span>
+                    <Textarea
+                      id="cmd"
+                      value={data.commandTemplate}
+                      onChange={(e) => setTemplate(e.target.value)}
+                      className="min-h-[120px] resize-y font-mono text-sm"
+                      placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
+                      spellCheck={false}
+                    />
+                  </div>
+                  <p className="mt-2 font-mono text-xs text-muted-foreground">
+                    Multi-line supported. Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
+                  </p>
+                </section>
+              </div>
             </div>
+
+            {/* BOTTOM: Output (full width) */}
+            <section className="mt-6 flex min-h-[60vh] flex-col">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Output
+                </h2>
+                {running && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={cancel}
+                    className="h-8 font-mono"
+                  >
+                    <Square className="mr-1 h-3.5 w-3.5 fill-current" /> Stop
+                  </Button>
+                )}
+              </div>
+              <div className="flex-1">
+                <ConsoleOutput
+                  lines={lines}
+                  running={running}
+                  onClear={() => setLines([])}
+                />
+              </div>
+            </section>
           </>
         )}
       </main>
