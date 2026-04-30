@@ -59,10 +59,7 @@ const Index = () => {
     persist({ ...data, tests: data.tests.filter((x) => x.id !== id) });
   };
 
-  const setTemplate = (commandTemplate: string) => {
-    if (!data) return;
-    persist({ ...data, commandTemplate });
-  };
+  const COMMAND_TEMPLATE = 'echo {tag}';
 
   const appendLine = (kind: LogLine['kind'], text: string) =>
     setLines((prev) => [...prev, { id: crypto.randomUUID(), kind, text, at: Date.now() }]);
