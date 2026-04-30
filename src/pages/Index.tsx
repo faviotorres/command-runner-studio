@@ -66,7 +66,7 @@ const Index = () => {
 
   const run = (test: Test) => {
     if (!data || running) return;
-    const cmd = data.commandTemplate.split('{tag}').join(test.tag);
+    const cmd = COMMAND_TEMPLATE.split('{tag}').join(test.tag);
     setLines([]);
     setRunning(true);
     setActiveId(test.id);
