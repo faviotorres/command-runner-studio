@@ -69,7 +69,7 @@ export function TestFormDialog({ open, initial, onOpenChange, onSubmit }: Props)
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="ghost" className="hover:bg-border hover:text-foreground" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button onClick={submit}>{initial ? 'Save' : 'Create'}</Button>
         </DialogFooter>
       </DialogContent>
