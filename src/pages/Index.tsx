@@ -188,7 +188,10 @@ const Index = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div
+                  className="space-y-2 overflow-y-auto pr-1"
+                  style={{ maxHeight: 'calc(5.5 * (2.5rem + 1rem + 0.5rem))' }}
+                >
                   {filtered.length === 0 && (
                     <div className="rounded-md border border-dashed border-border p-8 text-center font-mono text-sm text-muted-foreground">
                       {data.tests.length === 0 ? 'No tests yet — create one.' : 'No matches.'}
