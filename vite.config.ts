@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+// @ts-expect-error - plain JS plugin, no types
 import { testRunnerHelper } from "./server/vite-plugin.mjs";
 
 // https://vitejs.dev/config/
