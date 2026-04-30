@@ -1,4 +1,4 @@
-import type { TestsFile } from './types';
+import type { Settings, TestsFile } from './types';
 
 export const getApiBase = () =>
   (typeof window !== 'undefined' && localStorage.getItem('apiBase')) ||
@@ -20,6 +20,22 @@ export async function saveTests(data: TestsFile): Promise<TestsFile> {
   return res.json();
 }
 
+export async function fetchSettings(): Promise<Settings> {
+  const res = await fetch(`${getApiBase()}/api/settings`);
+  if (!res.ok) throw new Error(`GET /api/settings ${res.status}`);
+  return res.json();
+}
+
+export async function saveSettings(data: Settings): Promise<Settings> {
+  const res = await fetch(`${getApiBase()}/api/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`PUT /api/settings ${res.status}`);
+  return res.json();
+}
+
 export type RunHandlers = {
   onStart?: (cmd: string) => void;
   onStdout?: (chunk: string) => void;
@@ -28,8 +44,10 @@ export type RunHandlers = {
   onError?: (err: string) => void;
 };
 
-export function runCommand(cmd: string, handlers: RunHandlers): () => void {
-  const url = `${getApiBase()}/api/run?cmd=${encodeURIComponent(cmd)}`;
+export function runCommand(cmd: string, cwd: string, handlers: RunHandlers): () => void {
+  const params = new URLSearchParams({ cmd });
+  if (cwd) params.set('cwd', cwd);
+  const url = `${getApiBase()}/api/run?${params.toString()}`;
   const es = new EventSource(url);
 
   es.addEventListener('start', (e: MessageEvent) => {

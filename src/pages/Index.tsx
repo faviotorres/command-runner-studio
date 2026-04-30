@@ -1,17 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Terminal, Server, AlertTriangle, Square } from 'lucide-react';
+import { Plus, Search, Terminal, Server, AlertTriangle, Square, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
-import { fetchTests, runCommand, saveTests, getApiBase } from '@/lib/api';
-import type { LogLine, Test, TestsFile } from '@/lib/types';
+import {
+  fetchTests, runCommand, saveTests, getApiBase,
+  fetchSettings, saveSettings,
+} from '@/lib/api';
+import type { LogLine, Settings, Test, TestsFile } from '@/lib/types';
 import { ConsoleOutput } from '@/components/ConsoleOutput';
 import { TestRow } from '@/components/TestRow';
 import { TestFormDialog } from '@/components/TestFormDialog';
 
 const Index = () => {
   const [data, setData] = useState<TestsFile | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Test | null>(null);
@@ -21,10 +26,10 @@ const Index = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [stop, setStop] = useState<(() => void) | null>(null);
 
-  // Load tests
+  // Load tests + settings
   useEffect(() => {
-    fetchTests()
-      .then(setData)
+    Promise.all([fetchTests(), fetchSettings()])
+      .then(([t, s]) => { setData(t); setSettings(s); })
       .catch((e) => setLoadError(String(e?.message || e)));
   }, []);
 
@@ -45,6 +50,14 @@ const Index = () => {
     }
   };
 
+  const persistSettings = async (next: Settings) => {
+    setSettings(next);
+    try { await saveSettings(next); }
+    catch (e) {
+      toast({ title: 'Save failed', description: String(e), variant: 'destructive' });
+    }
+  };
+
   const upsert = (t: Test) => {
     if (!data) return;
     const exists = data.tests.some((x) => x.id === t.id);
@@ -59,20 +72,26 @@ const Index = () => {
     persist({ ...data, tests: data.tests.filter((x) => x.id !== id) });
   };
 
-  const COMMAND_TEMPLATE = 'echo {tag}';
+  const setTemplate = (commandTemplate: string) => {
+    if (!data) return;
+    persist({ ...data, commandTemplate });
+  };
 
   const appendLine = (kind: LogLine['kind'], text: string) =>
     setLines((prev) => [...prev, { id: crypto.randomUUID(), kind, text, at: Date.now() }]);
 
   const run = (test: Test) => {
     if (!data || running) return;
-    const cmd = COMMAND_TEMPLATE.split('{tag}').join(test.tag);
+    const template = data.commandTemplate || 'echo {tag}';
+    const cmd = template.split('{tag}').join(test.tag);
+    const cwd = settings?.workingDir?.trim() || '';
     setLines([]);
     setRunning(true);
     setActiveId(test.id);
+    if (cwd) appendLine('info', `cwd: ${cwd}`);
     appendLine('info', `$ ${cmd}`);
 
-    const close = runCommand(cmd, {
+    const close = runCommand(cmd, cwd, {
       onStdout: (c) => appendLine('stdout', c),
       onStderr: (c) => appendLine('stderr', c),
       onEnd: (code) => {
@@ -141,19 +160,47 @@ const Index = () => {
           </div>
         )}
 
-        {data && (
+        {data && settings && (
           <>
-            {/* Command (hardcoded) */}
-            <section className="mb-8 rounded-lg border border-border bg-card p-5">
-              <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Command
+            {/* Working directory */}
+            <section className="mb-4 rounded-lg border border-border bg-card p-5">
+              <Label htmlFor="cwd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                Working directory
               </Label>
-              <div className="mt-2 flex items-center gap-2 font-mono text-sm">
-                <span className="text-primary">$</span>
-                <code className="text-foreground">echo <span className="text-primary">{'{tag}'}</span></code>
+              <div className="mt-2 flex items-center gap-2">
+                <FolderOpen className="h-4 w-4 shrink-0 text-primary" />
+                <Input
+                  id="cwd"
+                  value={settings.workingDir}
+                  onChange={(e) => persistSettings({ ...settings, workingDir: e.target.value })}
+                  className="font-mono"
+                  placeholder="/Users/me/projects/my-app"
+                />
               </div>
               <p className="mt-2 font-mono text-xs text-muted-foreground">
-                Each test's <code className="text-primary">tag</code> is passed to the command when you press Run.
+                Commands are executed from this directory. Saved to{' '}
+                <code className="text-primary">server/settings.json</code>.
+              </p>
+            </section>
+
+            {/* Command template (multiline) */}
+            <section className="mb-8 rounded-lg border border-border bg-card p-5">
+              <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                Command
+              </Label>
+              <div className="mt-2 flex items-start gap-2">
+                <span className="mt-2 font-mono text-primary">$</span>
+                <Textarea
+                  id="cmd"
+                  value={data.commandTemplate}
+                  onChange={(e) => setTemplate(e.target.value)}
+                  className="min-h-[120px] resize-y font-mono text-sm"
+                  placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
+                  spellCheck={false}
+                />
+              </div>
+              <p className="mt-2 font-mono text-xs text-muted-foreground">
+                Multi-line supported. Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
               </p>
             </section>
 

@@ -3,11 +3,13 @@
 // Default port: 8787. Override with PORT env var.
 //
 // Endpoints:
-//   GET  /api/tests             -> { tests: Test[] }
-//   PUT  /api/tests             -> body: { tests: Test[] }   replace all
-//   GET  /api/run?cmd=...       -> Server-Sent Events stream of stdout/stderr
+//   GET  /api/tests                       -> { commandTemplate, tests: Test[] }
+//   PUT  /api/tests                       -> body: { commandTemplate?, tests? }
+//   GET  /api/settings                    -> { workingDir }
+//   PUT  /api/settings                    -> body: { workingDir }
+//   GET  /api/run?cmd=...&cwd=...         -> SSE stream of stdout/stderr
 //
-// Tests are stored in ./tests.json (next to this file).
+// Tests live in ./tests.json, settings in ./settings.json.
 
 import http from 'node:http';
 import { spawn } from 'node:child_process';
@@ -17,6 +19,7 @@ import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TESTS_FILE = join(__dirname, 'tests.json');
+const SETTINGS_FILE = join(__dirname, 'settings.json');
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8787;
 
 const CORS = {
@@ -25,29 +28,29 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-async function ensureFile() {
-  try { await access(TESTS_FILE); }
-  catch {
-    const seed = {
-      commandTemplate: 'echo "Running test with tag: {tag}"',
-      tests: [
-        { id: crypto.randomUUID(), name: 'Example smoke test', tag: 'smoke' },
-        { id: crypto.randomUUID(), name: 'Login flow',          tag: 'auth.login' },
-      ],
-    };
-    await writeFile(TESTS_FILE, JSON.stringify(seed, null, 2));
-  }
+async function ensureFile(path, seed) {
+  try { await access(path); }
+  catch { await writeFile(path, JSON.stringify(seed, null, 2)); }
 }
 
-async function readJson() {
-  await ensureFile();
-  const raw = await readFile(TESTS_FILE, 'utf8');
-  return JSON.parse(raw);
+async function readJson(path, seed) {
+  await ensureFile(path, seed);
+  return JSON.parse(await readFile(path, 'utf8'));
 }
 
-async function writeJson(data) {
-  await writeFile(TESTS_FILE, JSON.stringify(data, null, 2));
+async function writeJson(path, data) {
+  await writeFile(path, JSON.stringify(data, null, 2));
 }
+
+const TESTS_SEED = {
+  commandTemplate: 'echo "Running test with tag: {tag}"',
+  tests: [
+    { id: crypto.randomUUID(), name: 'Example smoke test', tag: 'smoke' },
+    { id: crypto.randomUUID(), name: 'Login flow',          tag: 'auth.login' },
+  ],
+};
+
+const SETTINGS_SEED = { workingDir: '' };
 
 function send(res, status, body, extra = {}) {
   res.writeHead(status, { 'Content-Type': 'application/json', ...CORS, ...extra });
@@ -73,23 +76,34 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (url.pathname === '/api/tests' && req.method === 'GET') {
-      const data = await readJson();
-      return send(res, 200, data);
+      return send(res, 200, await readJson(TESTS_FILE, TESTS_SEED));
     }
 
     if (url.pathname === '/api/tests' && req.method === 'PUT') {
       const body = await readBody(req);
-      const data = await readJson();
+      const data = await readJson(TESTS_FILE, TESTS_SEED);
       const next = {
         commandTemplate: typeof body.commandTemplate === 'string' ? body.commandTemplate : data.commandTemplate,
         tests: Array.isArray(body.tests) ? body.tests : data.tests,
       };
-      await writeJson(next);
+      await writeJson(TESTS_FILE, next);
+      return send(res, 200, next);
+    }
+
+    if (url.pathname === '/api/settings' && req.method === 'GET') {
+      return send(res, 200, await readJson(SETTINGS_FILE, SETTINGS_SEED));
+    }
+
+    if (url.pathname === '/api/settings' && req.method === 'PUT') {
+      const body = await readBody(req);
+      const next = { workingDir: typeof body.workingDir === 'string' ? body.workingDir : '' };
+      await writeJson(SETTINGS_FILE, next);
       return send(res, 200, next);
     }
 
     if (url.pathname === '/api/run' && req.method === 'GET') {
       const cmd = url.searchParams.get('cmd');
+      const cwdParam = url.searchParams.get('cwd');
       if (!cmd) return send(res, 400, { error: 'Missing cmd' });
 
       res.writeHead(200, {
@@ -102,9 +116,17 @@ const server = http.createServer(async (req, res) => {
       const write = (event, data) =>
         res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
-      write('start', { cmd, at: new Date().toISOString() });
+      const cwd = cwdParam && cwdParam.trim() ? cwdParam : undefined;
+      write('start', { cmd, cwd: cwd || process.cwd(), at: new Date().toISOString() });
 
-      const child = spawn(cmd, { shell: true });
+      let child;
+      try {
+        child = spawn(cmd, { shell: true, cwd });
+      } catch (err) {
+        write('stderr', { chunk: String(err) });
+        write('end', { code: -1 });
+        return res.end();
+      }
 
       child.stdout.on('data', d => write('stdout', { chunk: d.toString() }));
       child.stderr.on('data', d => write('stderr', { chunk: d.toString() }));
@@ -123,5 +145,6 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n  Test Runner helper listening on http://localhost:${PORT}`);
-  console.log(`  Tests file: ${TESTS_FILE}\n`);
+  console.log(`  Tests file:    ${TESTS_FILE}`);
+  console.log(`  Settings file: ${SETTINGS_FILE}\n`);
 });
