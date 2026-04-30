@@ -172,7 +172,8 @@ const Index = () => {
                   <Button
                     size="sm"
                     onClick={() => { setEditing(null); setDialogOpen(true); }}
-                    className="h-8 bg-primary font-mono text-primary-foreground hover:bg-primary/90"
+                    disabled={running}
+                    className="h-8 bg-primary font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
                   >
                     <Plus className="mr-1 h-4 w-4" /> New
                   </Button>
