@@ -59,17 +59,14 @@ const Index = () => {
     persist({ ...data, tests: data.tests.filter((x) => x.id !== id) });
   };
 
-  const setTemplate = (commandTemplate: string) => {
-    if (!data) return;
-    persist({ ...data, commandTemplate });
-  };
+  const COMMAND_TEMPLATE = 'echo {tag}';
 
   const appendLine = (kind: LogLine['kind'], text: string) =>
     setLines((prev) => [...prev, { id: crypto.randomUUID(), kind, text, at: Date.now() }]);
 
   const run = (test: Test) => {
     if (!data || running) return;
-    const cmd = data.commandTemplate.split('{tag}').join(test.tag);
+    const cmd = COMMAND_TEMPLATE.split('{tag}').join(test.tag);
     setLines([]);
     setRunning(true);
     setActiveId(test.id);
@@ -146,23 +143,17 @@ const Index = () => {
 
         {data && (
           <>
-            {/* Command template */}
+            {/* Command (hardcoded) */}
             <section className="mb-8 rounded-lg border border-border bg-card p-5">
               <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Command template
+                Command
               </Label>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="font-mono text-primary">$</span>
-                <Input
-                  value={data.commandTemplate}
-                  onChange={(e) => setTemplate(e.target.value)}
-                  className="font-mono"
-                  placeholder='npm test -- --tag {tag}'
-                />
+              <div className="mt-2 flex items-center gap-2 font-mono text-sm">
+                <span className="text-primary">$</span>
+                <code className="text-foreground">echo <span className="text-primary">{'{tag}'}</span></code>
               </div>
               <p className="mt-2 font-mono text-xs text-muted-foreground">
-                Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the
-                selected test's tag.
+                Each test's <code className="text-primary">tag</code> is passed to the command when you press Run.
               </p>
             </section>
 
