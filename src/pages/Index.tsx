@@ -231,21 +231,7 @@ const Index = () => {
             <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
               {/* LEFT: Section tabs + list */}
               <section className="flex flex-col">
-                <Tabs value={section} onValueChange={(v) => setSection(v as Section)}>
-                  <div className="mb-3 flex items-center justify-center">
-                    <TabsList className="h-9 bg-secondary font-mono">
-                      <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
-                        Appium
-                      </TabsTrigger>
-                      <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
-                        APK
-                      </TabsTrigger>
-                      <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
-                        Tests
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
-
+                <>
                   <TabsContent value="tests" className="mt-0">
                     <div className="mb-3 flex items-center gap-2">
                       <div className="relative flex-1">
