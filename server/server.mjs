@@ -88,7 +88,9 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (url.pathname === '/api/tests' && req.method === 'GET') {
-      return send(res, 200, await readJson(TESTS_FILE, TESTS_SEED));
+      const data = await readJson(TESTS_FILE, TESTS_SEED);
+      if (!data.apk) data.apk = TESTS_SEED.apk;
+      return send(res, 200, data);
     }
 
     if (url.pathname === '/api/tests' && req.method === 'PUT') {
