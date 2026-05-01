@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Terminal, Server, AlertTriangle, Square, FolderOpen, Play, Download, Upload } from 'lucide-react';
+import { Plus, Search, Terminal, Server, AlertTriangle, Square, FolderOpen, Play, Download, Upload, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,7 @@ import {
   fetchTests, runCommand, saveTests, getApiBase,
   fetchSettings, saveSettings,
 } from '@/lib/api';
-import type { ApkConfig, LogLine, Settings, Test, TestsFile } from '@/lib/types';
+import type { ApkConfig, AppiumConfig, LogLine, Settings, Test, TestsFile } from '@/lib/types';
 import { ConsoleOutput } from '@/components/ConsoleOutput';
 import { TestRow } from '@/components/TestRow';
 import { TestFormDialog } from '@/components/TestFormDialog';
@@ -26,7 +26,11 @@ const DEFAULT_APK: ApkConfig = {
   },
 };
 
-type Section = 'tests' | 'apk';
+const DEFAULT_APPIUM: AppiumConfig = {
+  commandTemplate: 'npm run start-appium',
+};
+
+type Section = 'tests' | 'apk' | 'appium';
 type ApkKind = 'download' | 'upload';
 
 const Index = () => {
