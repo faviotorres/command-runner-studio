@@ -370,13 +370,11 @@ const Index = () => {
                       title="Download command"
                       value={apk.download.commandTemplate}
                       onChange={(v) => updateApk('download', { commandTemplate: v })}
-                      hint="Paste the filename directly into the command when prompted."
                     />
                     <ApkCommandSection
                       title="Upload command"
                       value={apk.upload.commandTemplate}
                       onChange={(v) => updateApk('upload', { commandTemplate: v })}
-                      hint="Edit this command to include the filename you want to upload."
                     />
                   </>
                 ) : (
