@@ -114,6 +114,11 @@ const Index = () => {
     persist({ ...data, apk: nextApk });
   };
 
+  const updateAppium = (commandTemplate: string) => {
+    if (!data) return;
+    persist({ ...data, appium: { commandTemplate } });
+  };
+
   const appendLine = (kind: LogLine['kind'], text: string) =>
     setLines((prev) => [...prev, { id: crypto.randomUUID(), kind, text, at: Date.now() }]);
 
