@@ -164,7 +164,10 @@ const Index = () => {
     startRun(cmd, `apk-${kind}`, filename);
   };
 
-  const cancel = () => {
+  const runAppium = () => {
+    if (!data || running) return;
+    startRun(appium.commandTemplate, 'appium');
+  };
     stop?.();
     setRunning(false);
     appendLine('end', '\n[cancelled]');
