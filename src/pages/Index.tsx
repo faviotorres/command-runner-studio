@@ -229,14 +229,14 @@ const Index = () => {
                 <Tabs value={section} onValueChange={(v) => setSection(v as Section)}>
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <TabsList className="h-9 bg-secondary font-mono">
-                      <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
-                        Tests
+                      <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
+                        Appium
                       </TabsTrigger>
                       <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
                         APK
                       </TabsTrigger>
-                      <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
-                        Appium
+                      <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
+                        Tests
                       </TabsTrigger>
                     </TabsList>
                     {section === 'tests' && (
@@ -376,7 +376,7 @@ const Index = () => {
                       />
                     </div>
                     <p className="mt-2 font-mono text-xs text-muted-foreground">
-                      Multi-line supported. Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
+                      Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
                     </p>
                   </section>
                 ) : section === 'apk' ? (
