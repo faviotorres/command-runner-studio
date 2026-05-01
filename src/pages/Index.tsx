@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import {
-  fetchTests, runCommand, saveTests, getApiBase,
+  fetchTests, runCommand, saveTests,
   fetchSettings, saveSettings,
 } from '@/lib/api';
 import type { ApkConfig, AppiumConfig, LogLine, Settings, Test, TestsFile } from '@/lib/types';
