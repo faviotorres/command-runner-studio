@@ -379,7 +379,7 @@ const Index = () => {
                       Multi-line supported. Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
                     </p>
                   </section>
-                ) : (
+                ) : section === 'apk' ? (
                   <>
                     <ApkCommandSection
                       title="Download command"
@@ -394,6 +394,13 @@ const Index = () => {
                       hint="Use {filename} as a placeholder. The filename is also fed to stdin."
                     />
                   </>
+                ) : (
+                  <ApkCommandSection
+                    title="Appium command"
+                    value={appium.commandTemplate}
+                    onChange={(v) => updateAppium(v)}
+                    hint="Runs in the configured working directory."
+                  />
                 )}
               </div>
             </div>
