@@ -19,10 +19,10 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
   }, [lines]);
 
   const reportPath = useMemo(() => {
-    // Scan from the end for the last "Created report:" occurrence.
+    // Scan from the end for the last "Created report:" occurrence with a non-empty path.
     for (let i = lines.length - 1; i >= 0; i--) {
       const text = lines[i].text;
-      const match = text.match(/Created report:\s*(.+?)\s*$/m);
+      const match = text.match(/Created report:[ \t]*(\S.*?)\s*$/m);
       if (match) return match[1].trim();
     }
     return null;
@@ -31,7 +31,6 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
   const reportHref = useMemo(() => {
     if (!reportPath) return null;
     if (/^[a-z]+:\/\//i.test(reportPath)) return reportPath;
-    // Treat as a local filesystem path -> file:// URL
     const normalized = reportPath.replace(/\\/g, '/');
     return normalized.startsWith('/')
       ? `file://${normalized}`
@@ -46,16 +45,15 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
             console — {running ? 'running' : 'idle'}
           </span>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {reportHref && (
             <Button
-              variant="ghost"
               size="sm"
               asChild
-              className="h-7 text-primary hover:text-primary"
+              className="h-8 bg-primary font-mono text-primary-foreground hover:bg-primary/90"
             >
               <a href={reportHref} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Open Report
+                <ExternalLink className="mr-1 h-4 w-4" /> Open Report
               </a>
             </Button>
           )}
@@ -63,7 +61,7 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
             variant="ghost"
             size="sm"
             onClick={onClear}
-            className="h-7 text-muted-foreground hover:text-foreground"
+            className="h-7 text-muted-foreground hover:bg-border hover:text-foreground"
           >
             <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Clear
           </Button>
