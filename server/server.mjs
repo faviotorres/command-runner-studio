@@ -48,6 +48,18 @@ const TESTS_SEED = {
     { id: crypto.randomUUID(), name: 'Example smoke test', tag: 'smoke' },
     { id: crypto.randomUUID(), name: 'Login flow',          tag: 'auth.login' },
   ],
+  apk: {
+    download: {
+      // Interactive script that prompts for a filename, then pulls it via adb.
+      // The web UI auto-feeds {filename} into stdin, so the prompt is answered automatically.
+      commandTemplate: 'bash -c \'read -p "Enter APK filename: " f && echo "Pulling $f..." && adb pull "/sdcard/Download/$f" "./$f"\'',
+      filename: 'app-release.apk',
+    },
+    upload: {
+      commandTemplate: 'adb install -r "{filename}"',
+      filename: 'app-release.apk',
+    },
+  },
 };
 
 const SETTINGS_SEED = { workingDir: '' };
@@ -76,7 +88,9 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (url.pathname === '/api/tests' && req.method === 'GET') {
-      return send(res, 200, await readJson(TESTS_FILE, TESTS_SEED));
+      const data = await readJson(TESTS_FILE, TESTS_SEED);
+      if (!data.apk) data.apk = TESTS_SEED.apk;
+      return send(res, 200, data);
     }
 
     if (url.pathname === '/api/tests' && req.method === 'PUT') {
@@ -85,6 +99,7 @@ const server = http.createServer(async (req, res) => {
       const next = {
         commandTemplate: typeof body.commandTemplate === 'string' ? body.commandTemplate : data.commandTemplate,
         tests: Array.isArray(body.tests) ? body.tests : data.tests,
+        apk: (body.apk && typeof body.apk === 'object') ? body.apk : (data.apk || TESTS_SEED.apk),
       };
       await writeJson(TESTS_FILE, next);
       return send(res, 200, next);
@@ -104,6 +119,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/run' && req.method === 'GET') {
       const cmd = url.searchParams.get('cmd');
       const cwdParam = url.searchParams.get('cwd');
+      const stdinParam = url.searchParams.get('stdin');
       if (!cmd) return send(res, 400, { error: 'Missing cmd' });
 
       res.writeHead(200, {
@@ -127,6 +143,12 @@ const server = http.createServer(async (req, res) => {
         write('end', { code: -1 });
         return res.end();
       }
+
+      // Auto-feed stdin (e.g. APK filename) so interactive prompts get answered.
+      if (stdinParam != null) {
+        try { child.stdin.write(stdinParam.endsWith('\n') ? stdinParam : stdinParam + '\n'); } catch {}
+      }
+      try { child.stdin.end(); } catch {}
 
       child.stdout.on('data', d => write('stdout', { chunk: d.toString() }));
       child.stderr.on('data', d => write('stderr', { chunk: d.toString() }));
