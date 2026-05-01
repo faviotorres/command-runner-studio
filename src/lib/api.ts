@@ -44,9 +44,10 @@ export type RunHandlers = {
   onError?: (err: string) => void;
 };
 
-export function runCommand(cmd: string, cwd: string, handlers: RunHandlers): () => void {
+export function runCommand(cmd: string, cwd: string, handlers: RunHandlers, stdin?: string): () => void {
   const params = new URLSearchParams({ cmd });
   if (cwd) params.set('cwd', cwd);
+  if (stdin != null) params.set('stdin', stdin);
   const url = `${getApiBase()}/api/run?${params.toString()}`;
   const es = new EventSource(url);
 

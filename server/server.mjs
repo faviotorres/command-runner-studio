@@ -142,6 +142,12 @@ const server = http.createServer(async (req, res) => {
         return res.end();
       }
 
+      // Auto-feed stdin (e.g. APK filename) so interactive prompts get answered.
+      if (stdinParam != null) {
+        try { child.stdin.write(stdinParam.endsWith('\n') ? stdinParam : stdinParam + '\n'); } catch {}
+      }
+      try { child.stdin.end(); } catch {}
+
       child.stdout.on('data', d => write('stdout', { chunk: d.toString() }));
       child.stderr.on('data', d => write('stderr', { chunk: d.toString() }));
       child.on('close', code => { write('end', { code }); res.end(); });
