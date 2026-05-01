@@ -176,25 +176,19 @@ const Index = () => {
     <div className="min-h-screen bg-background font-sans">
       {/* Header */}
       <header className="border-b border-border bg-card/40 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary shadow-glow">
-              <Terminal className="h-5 w-5" />
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <Terminal className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="font-mono text-lg font-semibold tracking-tight glow-text">
+              <h1 className="font-mono text-sm font-semibold tracking-tight">
                 test_runner
               </h1>
-              <p className="font-mono text-xs text-muted-foreground">
+              <p className="font-mono text-[10px] leading-tight text-muted-foreground">
                 local command launcher
               </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <Server className="h-3.5 w-3.5" />
-            <span>helper:</span>
-            <code className="rounded bg-secondary px-2 py-1 text-primary">{getApiBase()}</code>
           </div>
         </div>
       </header>
