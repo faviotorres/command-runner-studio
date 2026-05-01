@@ -62,6 +62,9 @@ const TESTS_SEED = {
       filename: 'app-release.apk',
     },
   },
+  appium: {
+    commandTemplate: 'npm run start-appium',
+  },
 };
 
 const SETTINGS_SEED = { workingDir: '' };
