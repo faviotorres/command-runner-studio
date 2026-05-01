@@ -229,14 +229,14 @@ const Index = () => {
                 <Tabs value={section} onValueChange={(v) => setSection(v as Section)}>
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <TabsList className="h-9 bg-secondary font-mono">
-                      <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
-                        Tests
+                      <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
+                        Appium
                       </TabsTrigger>
                       <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
                         APK
                       </TabsTrigger>
-                      <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
-                        Appium
+                      <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
+                        Tests
                       </TabsTrigger>
                     </TabsList>
                     {section === 'tests' && (
