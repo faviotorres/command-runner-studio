@@ -436,17 +436,14 @@ const Index = () => {
 };
 
 type ApkRowProps = {
-  kind: ApkKind;
   icon: React.ReactNode;
   label: string;
-  filename: string;
   running: boolean;
   active: boolean;
-  onChange: (filename: string) => void;
   onRun: () => void;
 };
 
-function ApkRow({ icon, label, filename, running, active, onChange, onRun }: ApkRowProps) {
+function ApkRow({ icon, label, running, active, onRun }: ApkRowProps) {
   return (
     <div
       className={
@@ -466,13 +463,6 @@ function ApkRow({ icon, label, filename, running, active, onChange, onRun }: Apk
         {icon}
         <span>{label}</span>
       </div>
-      <Input
-        value={filename}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="filename.apk"
-        disabled={running}
-        className="h-8 flex-1 font-mono text-sm"
-      />
     </div>
   );
 }
