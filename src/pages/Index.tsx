@@ -425,7 +425,7 @@ const Index = () => {
         onOpenChange={setDialogOpen}
         onSubmit={upsert}
       />
-    </div>
+    </Tabs>
   );
 };
 
