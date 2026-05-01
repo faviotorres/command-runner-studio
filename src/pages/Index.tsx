@@ -370,13 +370,11 @@ const Index = () => {
                       title="Download command"
                       value={apk.download.commandTemplate}
                       onChange={(v) => updateApk('download', { commandTemplate: v })}
-                      hint="Paste the filename directly into the command when prompted."
                     />
                     <ApkCommandSection
                       title="Upload command"
                       value={apk.upload.commandTemplate}
                       onChange={(v) => updateApk('upload', { commandTemplate: v })}
-                      hint="Edit this command to include the filename you want to upload."
                     />
                   </>
                 ) : (
@@ -463,7 +461,7 @@ function ApkRow({ icon, label, running, active, onRun }: ApkRowProps) {
 
 function ApkCommandSection({
   title, value, onChange, hint,
-}: { title: string; value: string; onChange: (v: string) => void; hint: string }) {
+}: { title: string; value: string; onChange: (v: string) => void; hint?: string }) {
   return (
     <section className="rounded-lg border border-border bg-card p-5">
       <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
@@ -478,7 +476,7 @@ function ApkCommandSection({
           spellCheck={false}
         />
       </div>
-      <p className="mt-2 font-mono text-xs text-muted-foreground">{hint}</p>
+      {hint && <p className="mt-2 font-mono text-xs text-muted-foreground">{hint}</p>}
     </section>
   );
 }
