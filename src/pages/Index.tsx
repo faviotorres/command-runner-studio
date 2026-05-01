@@ -218,7 +218,7 @@ const Index = () => {
               {/* LEFT: Section tabs + list */}
               <section className="flex flex-col">
                 <Tabs value={section} onValueChange={(v) => setSection(v as Section)}>
-                  <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="mb-3 flex items-center justify-center">
                     <TabsList className="h-9 bg-secondary font-mono">
                       <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
                         Appium
@@ -230,27 +230,27 @@ const Index = () => {
                         Tests
                       </TabsTrigger>
                     </TabsList>
-                    {section === 'tests' && (
+                  </div>
+
+                  <TabsContent value="tests" className="mt-0">
+                    <div className="mb-3 flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          placeholder="filter by name or tag…"
+                          className="pl-9 font-mono"
+                        />
+                      </div>
                       <Button
                         size="sm"
                         onClick={() => { setEditing(null); setDialogOpen(true); }}
                         disabled={running}
-                        className="h-8 bg-primary font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                        className="h-9 shrink-0 bg-primary font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
                       >
                         <Plus className="mr-1 h-4 w-4" /> New
                       </Button>
-                    )}
-                  </div>
-
-                  <TabsContent value="tests" className="mt-0">
-                    <div className="relative mb-3">
-                      <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="filter by name or tag…"
-                        className="pl-9 font-mono"
-                      />
                     </div>
 
                     <div
