@@ -105,6 +105,7 @@ const server = http.createServer(async (req, res) => {
         commandTemplate: typeof body.commandTemplate === 'string' ? body.commandTemplate : data.commandTemplate,
         tests: Array.isArray(body.tests) ? body.tests : data.tests,
         apk: (body.apk && typeof body.apk === 'object') ? body.apk : (data.apk || TESTS_SEED.apk),
+        appium: (body.appium && typeof body.appium === 'object') ? body.appium : (data.appium || TESTS_SEED.appium),
       };
       await writeJson(TESTS_FILE, next);
       return send(res, 200, next);
