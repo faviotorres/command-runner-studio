@@ -472,7 +472,7 @@ function ApkCommandSection({
         <Textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="min-h-[80px] resize-y font-mono text-sm"
+          className="min-h-[40px] resize-y font-mono text-sm"
           spellCheck={false}
         />
       </div>
