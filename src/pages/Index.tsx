@@ -376,7 +376,7 @@ const Index = () => {
                       title="Download command"
                       value={apk.download.commandTemplate}
                       onChange={(v) => updateApk('download', { commandTemplate: v })}
-                      hint="The filename is auto-fed to stdin (so interactive prompts are answered) and substitutes {filename}."
+                      hint="Paste the filename directly into the command when prompted."
                     />
                     <ApkCommandSection
                       title="Upload command"
