@@ -158,10 +158,7 @@ const Index = () => {
   const runApk = (kind: ApkKind) => {
     if (!data || running) return;
     const action = apk[kind];
-    const filename = action.filename.trim();
-    const cmd = action.commandTemplate.split('{filename}').join(filename);
-    // Auto-feed the filename to stdin so interactive prompts are answered.
-    startRun(cmd, `apk-${kind}`, filename);
+    startRun(action.commandTemplate, `apk-${kind}`);
   };
 
   const runAppium = () => {
@@ -288,23 +285,17 @@ const Index = () => {
                   <TabsContent value="apk" className="mt-0">
                     <div className="space-y-2">
                       <ApkRow
-                        kind="download"
                         icon={<Download className="h-3.5 w-3.5" />}
                         label="Download"
-                        filename={apk.download.filename}
                         running={running}
                         active={activeId === 'apk-download'}
-                        onChange={(filename) => updateApk('download', { filename })}
                         onRun={() => runApk('download')}
                       />
                       <ApkRow
-                        kind="upload"
                         icon={<Upload className="h-3.5 w-3.5" />}
                         label="Upload"
-                        filename={apk.upload.filename}
                         running={running}
                         active={activeId === 'apk-upload'}
-                        onChange={(filename) => updateApk('upload', { filename })}
                         onRun={() => runApk('upload')}
                       />
                     </div>
@@ -385,13 +376,13 @@ const Index = () => {
                       title="Download command"
                       value={apk.download.commandTemplate}
                       onChange={(v) => updateApk('download', { commandTemplate: v })}
-                      hint="The filename is auto-fed to stdin (so interactive prompts are answered) and substitutes {filename}."
+                      hint="Paste the filename directly into the command when prompted."
                     />
                     <ApkCommandSection
                       title="Upload command"
                       value={apk.upload.commandTemplate}
                       onChange={(v) => updateApk('upload', { commandTemplate: v })}
-                      hint="Use {filename} as a placeholder. The filename is also fed to stdin."
+                      hint="Edit this command to include the filename you want to upload."
                     />
                   </>
                 ) : (
@@ -445,17 +436,14 @@ const Index = () => {
 };
 
 type ApkRowProps = {
-  kind: ApkKind;
   icon: React.ReactNode;
   label: string;
-  filename: string;
   running: boolean;
   active: boolean;
-  onChange: (filename: string) => void;
   onRun: () => void;
 };
 
-function ApkRow({ icon, label, filename, running, active, onChange, onRun }: ApkRowProps) {
+function ApkRow({ icon, label, running, active, onRun }: ApkRowProps) {
   return (
     <div
       className={
@@ -475,13 +463,6 @@ function ApkRow({ icon, label, filename, running, active, onChange, onRun }: Apk
         {icon}
         <span>{label}</span>
       </div>
-      <Input
-        value={filename}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="filename.apk"
-        disabled={running}
-        className="h-8 flex-1 font-mono text-sm"
-      />
     </div>
   );
 }
