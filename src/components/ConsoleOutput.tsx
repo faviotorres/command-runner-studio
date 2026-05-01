@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import type { LogLine } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { ExternalLink, Trash2 } from 'lucide-react';
 
 type Props = {
   lines: LogLine[];
@@ -18,6 +18,26 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [lines]);
 
+  const reportPath = useMemo(() => {
+    // Scan from the end for the last "Created report:" occurrence.
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const text = lines[i].text;
+      const match = text.match(/Created report:\s*(.+?)\s*$/m);
+      if (match) return match[1].trim();
+    }
+    return null;
+  }, [lines]);
+
+  const reportHref = useMemo(() => {
+    if (!reportPath) return null;
+    if (/^[a-z]+:\/\//i.test(reportPath)) return reportPath;
+    // Treat as a local filesystem path -> file:// URL
+    const normalized = reportPath.replace(/\\/g, '/');
+    return normalized.startsWith('/')
+      ? `file://${normalized}`
+      : `file:///${normalized}`;
+  }, [reportPath]);
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
       <div className="flex items-center justify-between border-b border-border bg-card/60 px-4 py-2">
@@ -26,14 +46,28 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
             console — {running ? 'running' : 'idle'}
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClear}
-          className="h-7 text-muted-foreground hover:text-foreground"
-        >
-          <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Clear
-        </Button>
+        <div className="flex items-center gap-1">
+          {reportHref && (
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-7 text-primary hover:text-primary"
+            >
+              <a href={reportHref} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Open Report
+              </a>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClear}
+            className="h-7 text-muted-foreground hover:text-foreground"
+          >
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Clear
+          </Button>
+        </div>
       </div>
 
       <div
