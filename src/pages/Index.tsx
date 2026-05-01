@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Terminal, Server, AlertTriangle, Square, FolderOpen, Play, Download, Upload } from 'lucide-react';
+import { Plus, Search, Terminal, Server, AlertTriangle, Square, FolderOpen, Play, Download, Upload, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +10,7 @@ import {
   fetchTests, runCommand, saveTests, getApiBase,
   fetchSettings, saveSettings,
 } from '@/lib/api';
-import type { ApkConfig, LogLine, Settings, Test, TestsFile } from '@/lib/types';
+import type { ApkConfig, AppiumConfig, LogLine, Settings, Test, TestsFile } from '@/lib/types';
 import { ConsoleOutput } from '@/components/ConsoleOutput';
 import { TestRow } from '@/components/TestRow';
 import { TestFormDialog } from '@/components/TestFormDialog';
@@ -26,7 +26,11 @@ const DEFAULT_APK: ApkConfig = {
   },
 };
 
-type Section = 'tests' | 'apk';
+const DEFAULT_APPIUM: AppiumConfig = {
+  commandTemplate: 'npm run start-appium',
+};
+
+type Section = 'tests' | 'apk' | 'appium';
 type ApkKind = 'download' | 'upload';
 
 const Index = () => {
@@ -47,6 +51,7 @@ const Index = () => {
     Promise.all([fetchTests(), fetchSettings()])
       .then(([t, s]) => {
         if (!t.apk) t.apk = DEFAULT_APK;
+        if (!t.appium) t.appium = DEFAULT_APPIUM;
         setData(t);
         setSettings(s);
       })
@@ -54,6 +59,7 @@ const Index = () => {
   }, []);
 
   const apk = data?.apk ?? DEFAULT_APK;
+  const appium = data?.appium ?? DEFAULT_APPIUM;
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -108,6 +114,11 @@ const Index = () => {
     persist({ ...data, apk: nextApk });
   };
 
+  const updateAppium = (commandTemplate: string) => {
+    if (!data) return;
+    persist({ ...data, appium: { commandTemplate } });
+  };
+
   const appendLine = (kind: LogLine['kind'], text: string) =>
     setLines((prev) => [...prev, { id: crypto.randomUUID(), kind, text, at: Date.now() }]);
 
@@ -151,6 +162,11 @@ const Index = () => {
     const cmd = action.commandTemplate.split('{filename}').join(filename);
     // Auto-feed the filename to stdin so interactive prompts are answered.
     startRun(cmd, `apk-${kind}`, filename);
+  };
+
+  const runAppium = () => {
+    if (!data || running) return;
+    startRun(appium.commandTemplate, 'appium');
   };
 
   const cancel = () => {
@@ -218,6 +234,9 @@ const Index = () => {
                       </TabsTrigger>
                       <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
                         APK
+                      </TabsTrigger>
+                      <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
+                        Appium
                       </TabsTrigger>
                     </TabsList>
                     {section === 'tests' && (
@@ -290,6 +309,31 @@ const Index = () => {
                       />
                     </div>
                   </TabsContent>
+
+                  <TabsContent value="appium" className="mt-0">
+                    <div
+                      className={
+                        'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50 hover:bg-secondary' +
+                        (activeId === 'appium' ? ' border-primary/70 shadow-glow' : '')
+                      }
+                    >
+                      <Button
+                        size="sm"
+                        onClick={runAppium}
+                        disabled={running}
+                        className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                      >
+                        <Play className="h-3.5 w-3.5 fill-current" />
+                      </Button>
+                      <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
+                        <Cpu className="h-3.5 w-3.5" />
+                        <span>Start Appium</span>
+                      </div>
+                      <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
+                        {appium.commandTemplate}
+                      </code>
+                    </div>
+                  </TabsContent>
                 </Tabs>
               </section>
 
@@ -335,7 +379,7 @@ const Index = () => {
                       Multi-line supported. Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
                     </p>
                   </section>
-                ) : (
+                ) : section === 'apk' ? (
                   <>
                     <ApkCommandSection
                       title="Download command"
@@ -350,6 +394,13 @@ const Index = () => {
                       hint="Use {filename} as a placeholder. The filename is also fed to stdin."
                     />
                   </>
+                ) : (
+                  <ApkCommandSection
+                    title="Appium command"
+                    value={appium.commandTemplate}
+                    onChange={(v) => updateAppium(v)}
+                    hint="Runs in the configured working directory."
+                  />
                 )}
               </div>
             </div>

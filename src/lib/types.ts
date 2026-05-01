@@ -14,10 +14,15 @@ export type ApkConfig = {
   upload: ApkAction;
 };
 
+export type AppiumConfig = {
+  commandTemplate: string;
+};
+
 export type TestsFile = {
   commandTemplate: string;
   tests: Test[];
   apk?: ApkConfig;
+  appium?: AppiumConfig;
 };
 
 export type Settings = {
