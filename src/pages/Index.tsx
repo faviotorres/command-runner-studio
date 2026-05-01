@@ -319,7 +319,7 @@ const Index = () => {
                       </code>
                     </div>
                   </TabsContent>
-                </Tabs>
+                </>
               </section>
 
               {/* RIGHT: working dir + command(s) */}
