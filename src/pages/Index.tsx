@@ -176,7 +176,7 @@ const Index = () => {
     <Tabs value={section} onValueChange={(v) => setSection(v as Section)} className="min-h-screen bg-background font-sans flex flex-col">
       {/* Header */}
       <header className="border-b border-border bg-card/40 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5">
+        <div className="mx-auto grid max-w-7xl grid-cols-3 items-center px-6 py-2.5">
           <div className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Terminal className="h-4 w-4" />
@@ -190,6 +190,20 @@ const Index = () => {
               </p>
             </div>
           </div>
+          <div className="flex justify-center">
+            <TabsList className="h-9 bg-secondary font-mono">
+              <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
+                Appium
+              </TabsTrigger>
+              <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
+                APK
+              </TabsTrigger>
+              <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
+                Tests
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <div />
         </div>
       </header>
 
