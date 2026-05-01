@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import type { LogLine } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { ExternalLink, Trash2 } from 'lucide-react';
 
 type Props = {
   lines: LogLine[];
@@ -17,6 +17,26 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [lines]);
+
+  const reportPath = useMemo(() => {
+    // Scan from the end for the last "Created report:" occurrence.
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const text = lines[i].text;
+      const match = text.match(/Created report:\s*(.+?)\s*$/m);
+      if (match) return match[1].trim();
+    }
+    return null;
+  }, [lines]);
+
+  const reportHref = useMemo(() => {
+    if (!reportPath) return null;
+    if (/^[a-z]+:\/\//i.test(reportPath)) return reportPath;
+    // Treat as a local filesystem path -> file:// URL
+    const normalized = reportPath.replace(/\\/g, '/');
+    return normalized.startsWith('/')
+      ? `file://${normalized}`
+      : `file:///${normalized}`;
+  }, [reportPath]);
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
