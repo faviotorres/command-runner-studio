@@ -173,10 +173,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans">
+    <Tabs value={section} onValueChange={(v) => setSection(v as Section)} className="min-h-screen bg-background font-sans flex flex-col">
       {/* Header */}
       <header className="border-b border-border bg-card/40 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5">
+        <div className="mx-auto grid max-w-7xl grid-cols-3 items-center px-6 py-2.5">
           <div className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Terminal className="h-4 w-4" />
@@ -190,6 +190,20 @@ const Index = () => {
               </p>
             </div>
           </div>
+          <div className="flex justify-center">
+            <TabsList className="h-9 bg-secondary font-mono">
+              <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
+                Appium
+              </TabsTrigger>
+              <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
+                APK
+              </TabsTrigger>
+              <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
+                Tests
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <div />
         </div>
       </header>
 
@@ -217,21 +231,7 @@ const Index = () => {
             <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
               {/* LEFT: Section tabs + list */}
               <section className="flex flex-col">
-                <Tabs value={section} onValueChange={(v) => setSection(v as Section)}>
-                  <div className="mb-3 flex items-center justify-center">
-                    <TabsList className="h-9 bg-secondary font-mono">
-                      <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
-                        Appium
-                      </TabsTrigger>
-                      <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
-                        APK
-                      </TabsTrigger>
-                      <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
-                        Tests
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
-
+                <>
                   <TabsContent value="tests" className="mt-0">
                     <div className="mb-3 flex items-center gap-2">
                       <div className="relative flex-1">
@@ -319,7 +319,7 @@ const Index = () => {
                       </code>
                     </div>
                   </TabsContent>
-                </Tabs>
+                </>
               </section>
 
               {/* RIGHT: working dir + command(s) */}
@@ -425,7 +425,7 @@ const Index = () => {
         onOpenChange={setDialogOpen}
         onSubmit={upsert}
       />
-    </div>
+    </Tabs>
   );
 };
 
