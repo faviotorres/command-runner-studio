@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Terminal, Server, AlertTriangle, Square, FolderOpen, Play, Download, Upload, Cpu } from 'lucide-react';
+import { Plus, Search, Terminal, AlertTriangle, Square, FolderOpen, Play, Download, Upload, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
