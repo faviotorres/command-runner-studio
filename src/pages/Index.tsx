@@ -376,7 +376,7 @@ const Index = () => {
                       />
                     </div>
                     <p className="mt-2 font-mono text-xs text-muted-foreground">
-                      Multi-line supported. Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
+                      Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
                     </p>
                   </section>
                 ) : section === 'apk' ? (
