@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Terminal, Server, AlertTriangle, Square, FolderOpen, Play, Download, Upload, Cpu } from 'lucide-react';
+import { Plus, Search, Terminal, AlertTriangle, Square, FolderOpen, Play, Download, Upload, Cpu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import {
-  fetchTests, runCommand, saveTests, getApiBase,
+  fetchTests, runCommand, saveTests,
   fetchSettings, saveSettings,
 } from '@/lib/api';
 import type { ApkConfig, AppiumConfig, LogLine, Settings, Test, TestsFile } from '@/lib/types';
@@ -176,25 +176,19 @@ const Index = () => {
     <div className="min-h-screen bg-background font-sans">
       {/* Header */}
       <header className="border-b border-border bg-card/40 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary shadow-glow">
-              <Terminal className="h-5 w-5" />
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <Terminal className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="font-mono text-lg font-semibold tracking-tight glow-text">
+              <h1 className="font-mono text-sm font-semibold tracking-tight">
                 test_runner
               </h1>
-              <p className="font-mono text-xs text-muted-foreground">
+              <p className="font-mono text-[10px] leading-tight text-muted-foreground">
                 local command launcher
               </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <Server className="h-3.5 w-3.5" />
-            <span>helper:</span>
-            <code className="rounded bg-secondary px-2 py-1 text-primary">{getApiBase()}</code>
           </div>
         </div>
       </header>
@@ -224,7 +218,7 @@ const Index = () => {
               {/* LEFT: Section tabs + list */}
               <section className="flex flex-col">
                 <Tabs value={section} onValueChange={(v) => setSection(v as Section)}>
-                  <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="mb-3 flex items-center justify-center">
                     <TabsList className="h-9 bg-secondary font-mono">
                       <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
                         Appium
@@ -236,27 +230,27 @@ const Index = () => {
                         Tests
                       </TabsTrigger>
                     </TabsList>
-                    {section === 'tests' && (
+                  </div>
+
+                  <TabsContent value="tests" className="mt-0">
+                    <div className="mb-3 flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          placeholder="filter by name or tag…"
+                          className="pl-9 font-mono"
+                        />
+                      </div>
                       <Button
                         size="sm"
                         onClick={() => { setEditing(null); setDialogOpen(true); }}
                         disabled={running}
-                        className="h-8 bg-primary font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                        className="h-9 shrink-0 bg-primary font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
                       >
                         <Plus className="mr-1 h-4 w-4" /> New
                       </Button>
-                    )}
-                  </div>
-
-                  <TabsContent value="tests" className="mt-0">
-                    <div className="relative mb-3">
-                      <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="filter by name or tag…"
-                        className="pl-9 font-mono"
-                      />
                     </div>
 
                     <div
