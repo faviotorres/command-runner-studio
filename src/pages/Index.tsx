@@ -17,7 +17,7 @@ import { TestFormDialog } from '@/components/TestFormDialog';
 
 const DEFAULT_APK: ApkConfig = {
   download: {
-    commandTemplate: `bash -c 'read -p "Enter APK filename: " f && echo "Pulling $f..." && adb pull "/sdcard/Download/$f" "./$f"'`,
+    commandTemplate: `bash -c 'echo "Starting download..."; sleep 1; echo "Connecting to device..."; sleep 2; read -p "Enter APK filename: " f && echo "" && echo "Got filename: $f" && echo "Pulling /sdcard/Download/$f -> ./$f"'`,
     filename: 'app-release.apk',
   },
   upload: {
