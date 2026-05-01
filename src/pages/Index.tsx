@@ -309,6 +309,31 @@ const Index = () => {
                       />
                     </div>
                   </TabsContent>
+
+                  <TabsContent value="appium" className="mt-0">
+                    <div
+                      className={
+                        'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50 hover:bg-secondary' +
+                        (activeId === 'appium' ? ' border-primary/70 shadow-glow' : '')
+                      }
+                    >
+                      <Button
+                        size="sm"
+                        onClick={runAppium}
+                        disabled={running}
+                        className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                      >
+                        <Play className="h-3.5 w-3.5 fill-current" />
+                      </Button>
+                      <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
+                        <Cpu className="h-3.5 w-3.5" />
+                        <span>Start Appium</span>
+                      </div>
+                      <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
+                        {appium.commandTemplate}
+                      </code>
+                    </div>
+                  </TabsContent>
                 </Tabs>
               </section>
 
