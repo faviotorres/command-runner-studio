@@ -382,7 +382,7 @@ const Index = () => {
                       title="Upload command"
                       value={apk.upload.commandTemplate}
                       onChange={(v) => updateApk('upload', { commandTemplate: v })}
-                      hint="Use {filename} as a placeholder. The filename is also fed to stdin."
+                      hint="Edit this command to include the filename you want to upload."
                     />
                   </>
                 ) : (
