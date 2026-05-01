@@ -168,6 +168,8 @@ const Index = () => {
     if (!data || running) return;
     startRun(appium.commandTemplate, 'appium');
   };
+
+  const cancel = () => {
     stop?.();
     setRunning(false);
     appendLine('end', '\n[cancelled]');
