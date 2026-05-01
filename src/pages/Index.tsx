@@ -461,7 +461,7 @@ function ApkRow({ icon, label, running, active, onRun }: ApkRowProps) {
 
 function ApkCommandSection({
   title, value, onChange, hint,
-}: { title: string; value: string; onChange: (v: string) => void; hint: string }) {
+}: { title: string; value: string; onChange: (v: string) => void; hint?: string }) {
   return (
     <section className="rounded-lg border border-border bg-card p-5">
       <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
@@ -476,7 +476,7 @@ function ApkCommandSection({
           spellCheck={false}
         />
       </div>
-      <p className="mt-2 font-mono text-xs text-muted-foreground">{hint}</p>
+      {hint && <p className="mt-2 font-mono text-xs text-muted-foreground">{hint}</p>}
     </section>
   );
 }
