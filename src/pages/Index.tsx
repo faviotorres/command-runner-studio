@@ -51,6 +51,7 @@ const Index = () => {
     Promise.all([fetchTests(), fetchSettings()])
       .then(([t, s]) => {
         if (!t.apk) t.apk = DEFAULT_APK;
+        if (!t.appium) t.appium = DEFAULT_APPIUM;
         setData(t);
         setSettings(s);
       })
@@ -58,6 +59,7 @@ const Index = () => {
   }, []);
 
   const apk = data?.apk ?? DEFAULT_APK;
+  const appium = data?.appium ?? DEFAULT_APPIUM;
 
   const filtered = useMemo(() => {
     if (!data) return [];
