@@ -95,6 +95,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/tests' && req.method === 'GET') {
       const data = await readJson(TESTS_FILE, TESTS_SEED);
       if (!data.apk) data.apk = TESTS_SEED.apk;
+      if (!data.appium) data.appium = TESTS_SEED.appium;
       return send(res, 200, data);
     }
 
