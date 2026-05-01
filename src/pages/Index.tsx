@@ -235,6 +235,9 @@ const Index = () => {
                       <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
                         APK
                       </TabsTrigger>
+                      <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
+                        Appium
+                      </TabsTrigger>
                     </TabsList>
                     {section === 'tests' && (
                       <Button
