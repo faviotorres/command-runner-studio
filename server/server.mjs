@@ -50,9 +50,11 @@ const TESTS_SEED = {
   ],
   apk: {
     download: {
-      // Interactive script that prompts for a filename, then pulls it via adb.
-      // The web UI auto-feeds {filename} into stdin, so the prompt is answered automatically.
-      commandTemplate: 'bash -c \'read -p "Enter APK filename: " f && echo "Pulling $f..." && adb pull "/sdcard/Download/$f" "./$f"\'',
+      // Simulates the real download flow: prints progress, waits ~3s, THEN
+      // prompts for the filename (mimicking the 30s delay before the real
+      // tool asks for input). The web UI auto-feeds {filename} into stdin,
+      // which sits in the pipe buffer until `read` consumes it.
+      commandTemplate: 'bash -c \'echo "Starting download..."; sleep 1; echo "Connecting to device..."; sleep 2; read -p "Enter APK filename: " f && echo "" && echo "Got filename: $f" && echo "Pulling /sdcard/Download/$f -> ./$f"\'',
       filename: 'app-release.apk',
     },
     upload: {
