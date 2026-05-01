@@ -415,7 +415,7 @@ function ApkRow({ icon, label, filename, running, active, onChange, onRun }: Apk
       <Button
         size="sm"
         onClick={onRun}
-        disabled={running || !filename.trim()}
+        disabled={running}
         className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
       >
         <Play className="h-3.5 w-3.5 fill-current" />
