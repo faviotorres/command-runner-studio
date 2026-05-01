@@ -173,7 +173,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans">
+    <Tabs value={section} onValueChange={(v) => setSection(v as Section)} className="min-h-screen bg-background font-sans flex flex-col">
       {/* Header */}
       <header className="border-b border-border bg-card/40 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2.5">
