@@ -1,23 +1,39 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Terminal, Server, AlertTriangle, Square, FolderOpen } from 'lucide-react';
+import { Plus, Search, Terminal, Server, AlertTriangle, Square, FolderOpen, Play, Download, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import {
   fetchTests, runCommand, saveTests, getApiBase,
   fetchSettings, saveSettings,
 } from '@/lib/api';
-import type { LogLine, Settings, Test, TestsFile } from '@/lib/types';
+import type { ApkConfig, LogLine, Settings, Test, TestsFile } from '@/lib/types';
 import { ConsoleOutput } from '@/components/ConsoleOutput';
 import { TestRow } from '@/components/TestRow';
 import { TestFormDialog } from '@/components/TestFormDialog';
+
+const DEFAULT_APK: ApkConfig = {
+  download: {
+    commandTemplate: `bash -c 'read -p "Enter APK filename: " f && echo "Pulling $f..." && adb pull "/sdcard/Download/$f" "./$f"'`,
+    filename: 'app-release.apk',
+  },
+  upload: {
+    commandTemplate: 'adb install -r "{filename}"',
+    filename: 'app-release.apk',
+  },
+};
+
+type Section = 'tests' | 'apk';
+type ApkKind = 'download' | 'upload';
 
 const Index = () => {
   const [data, setData] = useState<TestsFile | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [section, setSection] = useState<Section>('tests');
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Test | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -29,9 +45,15 @@ const Index = () => {
   // Load tests + settings
   useEffect(() => {
     Promise.all([fetchTests(), fetchSettings()])
-      .then(([t, s]) => { setData(t); setSettings(s); })
+      .then(([t, s]) => {
+        if (!t.apk) t.apk = DEFAULT_APK;
+        setData(t);
+        setSettings(s);
+      })
       .catch((e) => setLoadError(String(e?.message || e)));
   }, []);
+
+  const apk = data?.apk ?? DEFAULT_APK;
 
   const filtered = useMemo(() => {
     if (!data) return [];
@@ -77,19 +99,26 @@ const Index = () => {
     persist({ ...data, commandTemplate });
   };
 
+  const updateApk = (kind: ApkKind, patch: Partial<ApkConfig['download']>) => {
+    if (!data) return;
+    const nextApk: ApkConfig = {
+      ...apk,
+      [kind]: { ...apk[kind], ...patch },
+    };
+    persist({ ...data, apk: nextApk });
+  };
+
   const appendLine = (kind: LogLine['kind'], text: string) =>
     setLines((prev) => [...prev, { id: crypto.randomUUID(), kind, text, at: Date.now() }]);
 
-  const run = (test: Test) => {
-    if (!data || running) return;
-    const template = data.commandTemplate || 'echo {tag}';
-    const cmd = template.split('{tag}').join(test.tag);
+  const startRun = (cmd: string, id: string, stdin?: string) => {
     const cwd = settings?.workingDir?.trim() || '';
     setLines([]);
     setRunning(true);
-    setActiveId(test.id);
+    setActiveId(id);
     if (cwd) appendLine('info', `cwd: ${cwd}`);
     appendLine('info', `$ ${cmd}`);
+    if (stdin != null) appendLine('info', `[stdin] ${stdin}`);
 
     const close = runCommand(cmd, cwd, {
       onStdout: (c) => appendLine('stdout', c),
@@ -104,8 +133,24 @@ const Index = () => {
         setRunning(false);
         setStop(null);
       },
-    });
+    }, stdin);
     setStop(() => close);
+  };
+
+  const run = (test: Test) => {
+    if (!data || running) return;
+    const template = data.commandTemplate || 'echo {tag}';
+    const cmd = template.split('{tag}').join(test.tag);
+    startRun(cmd, test.id);
+  };
+
+  const runApk = (kind: ApkKind) => {
+    if (!data || running) return;
+    const action = apk[kind];
+    const filename = action.filename.trim();
+    const cmd = action.commandTemplate.split('{filename}').join(filename);
+    // Auto-feed the filename to stdin so interactive prompts are answered.
+    startRun(cmd, `apk-${kind}`, filename);
   };
 
   const cancel = () => {
@@ -151,7 +196,7 @@ const Index = () => {
               <div className="text-muted-foreground">
                 Run{' '}
                 <code className="rounded bg-background px-1.5 py-0.5 text-primary">
-                  node server/server.mjs
+                  npm run dev
                 </code>{' '}
                 in your project, then refresh.
               </div>
@@ -163,56 +208,92 @@ const Index = () => {
         {data && settings && (
           <>
             <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
-              {/* LEFT: Tests list */}
+              {/* LEFT: Section tabs + list */}
               <section className="flex flex-col">
-                <div className="mb-3 flex items-center justify-between">
-                  <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                    Tests <span className="text-primary">({data.tests.length})</span>
-                  </h2>
-                  <Button
-                    size="sm"
-                    onClick={() => { setEditing(null); setDialogOpen(true); }}
-                    disabled={running}
-                    className="h-8 bg-primary font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
-                  >
-                    <Plus className="mr-1 h-4 w-4" /> New
-                  </Button>
-                </div>
+                <Tabs value={section} onValueChange={(v) => setSection(v as Section)}>
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <TabsList className="h-9 bg-secondary font-mono">
+                      <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
+                        Tests
+                      </TabsTrigger>
+                      <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
+                        APK
+                      </TabsTrigger>
+                    </TabsList>
+                    {section === 'tests' && (
+                      <Button
+                        size="sm"
+                        onClick={() => { setEditing(null); setDialogOpen(true); }}
+                        disabled={running}
+                        className="h-8 bg-primary font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                      >
+                        <Plus className="mr-1 h-4 w-4" /> New
+                      </Button>
+                    )}
+                  </div>
 
-                <div className="relative mb-3">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="filter by name or tag…"
-                    className="pl-9 font-mono"
-                  />
-                </div>
-
-                <div
-                  className="space-y-2 overflow-y-auto pr-1"
-                  style={{ maxHeight: 'calc(5.5 * (2.5rem + 1rem + 0.5rem))' }}
-                >
-                  {filtered.length === 0 && (
-                    <div className="rounded-md border border-dashed border-border p-8 text-center font-mono text-sm text-muted-foreground">
-                      {data.tests.length === 0 ? 'No tests yet — create one.' : 'No matches.'}
+                  <TabsContent value="tests" className="mt-0">
+                    <div className="relative mb-3">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="filter by name or tag…"
+                        className="pl-9 font-mono"
+                      />
                     </div>
-                  )}
-                  {filtered.map((t) => (
-                    <TestRow
-                      key={t.id}
-                      test={t}
-                      running={running}
-                      active={activeId === t.id}
-                      onRun={() => run(t)}
-                      onEdit={() => { setEditing(t); setDialogOpen(true); }}
-                      onDelete={() => remove(t.id)}
-                    />
-                  ))}
-                </div>
+
+                    <div
+                      className="space-y-2 overflow-y-auto pr-1"
+                      style={{ maxHeight: 'calc(5.5 * (2.5rem + 1rem + 0.5rem))' }}
+                    >
+                      {filtered.length === 0 && (
+                        <div className="rounded-md border border-dashed border-border p-8 text-center font-mono text-sm text-muted-foreground">
+                          {data.tests.length === 0 ? 'No tests yet — create one.' : 'No matches.'}
+                        </div>
+                      )}
+                      {filtered.map((t) => (
+                        <TestRow
+                          key={t.id}
+                          test={t}
+                          running={running}
+                          active={activeId === t.id}
+                          onRun={() => run(t)}
+                          onEdit={() => { setEditing(t); setDialogOpen(true); }}
+                          onDelete={() => remove(t.id)}
+                        />
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="apk" className="mt-0">
+                    <div className="space-y-2">
+                      <ApkRow
+                        kind="download"
+                        icon={<Download className="h-3.5 w-3.5" />}
+                        label="Download"
+                        filename={apk.download.filename}
+                        running={running}
+                        active={activeId === 'apk-download'}
+                        onChange={(filename) => updateApk('download', { filename })}
+                        onRun={() => runApk('download')}
+                      />
+                      <ApkRow
+                        kind="upload"
+                        icon={<Upload className="h-3.5 w-3.5" />}
+                        label="Upload"
+                        filename={apk.upload.filename}
+                        running={running}
+                        active={activeId === 'apk-upload'}
+                        onChange={(filename) => updateApk('upload', { filename })}
+                        onRun={() => runApk('upload')}
+                      />
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </section>
 
-              {/* RIGHT: working dir + command */}
+              {/* RIGHT: working dir + command(s) */}
               <div className="space-y-4">
                 <section className="rounded-lg border border-border bg-card p-5">
                   <Label htmlFor="cwd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
@@ -234,25 +315,42 @@ const Index = () => {
                   </p>
                 </section>
 
-                <section className="rounded-lg border border-border bg-card p-5">
-                  <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                    Command
-                  </Label>
-                  <div className="mt-2 flex items-start gap-2">
-                    <span className="mt-2 font-mono text-primary">$</span>
-                    <Textarea
-                      id="cmd"
-                      value={data.commandTemplate}
-                      onChange={(e) => setTemplate(e.target.value)}
-                      className="min-h-[120px] resize-y font-mono text-sm"
-                      placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
-                      spellCheck={false}
+                {section === 'tests' ? (
+                  <section className="rounded-lg border border-border bg-card p-5">
+                    <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                      Command
+                    </Label>
+                    <div className="mt-2 flex items-start gap-2">
+                      <span className="mt-2 font-mono text-primary">$</span>
+                      <Textarea
+                        id="cmd"
+                        value={data.commandTemplate}
+                        onChange={(e) => setTemplate(e.target.value)}
+                        className="min-h-[120px] resize-y font-mono text-sm"
+                        placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
+                        spellCheck={false}
+                      />
+                    </div>
+                    <p className="mt-2 font-mono text-xs text-muted-foreground">
+                      Multi-line supported. Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
+                    </p>
+                  </section>
+                ) : (
+                  <>
+                    <ApkCommandSection
+                      title="Download command"
+                      value={apk.download.commandTemplate}
+                      onChange={(v) => updateApk('download', { commandTemplate: v })}
+                      hint="The filename is auto-fed to stdin (so interactive prompts are answered) and substitutes {filename}."
                     />
-                  </div>
-                  <p className="mt-2 font-mono text-xs text-muted-foreground">
-                    Multi-line supported. Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
-                  </p>
-                </section>
+                    <ApkCommandSection
+                      title="Upload command"
+                      value={apk.upload.commandTemplate}
+                      onChange={(v) => updateApk('upload', { commandTemplate: v })}
+                      hint="Use {filename} as a placeholder. The filename is also fed to stdin."
+                    />
+                  </>
+                )}
               </div>
             </div>
 
@@ -294,5 +392,69 @@ const Index = () => {
     </div>
   );
 };
+
+type ApkRowProps = {
+  kind: ApkKind;
+  icon: React.ReactNode;
+  label: string;
+  filename: string;
+  running: boolean;
+  active: boolean;
+  onChange: (filename: string) => void;
+  onRun: () => void;
+};
+
+function ApkRow({ icon, label, filename, running, active, onChange, onRun }: ApkRowProps) {
+  return (
+    <div
+      className={
+        'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50 hover:bg-secondary' +
+        (active ? ' border-primary/70 shadow-glow' : '')
+      }
+    >
+      <Button
+        size="sm"
+        onClick={onRun}
+        disabled={running || !filename.trim()}
+        className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+      >
+        <Play className="h-3.5 w-3.5 fill-current" />
+      </Button>
+      <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <Input
+        value={filename}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="filename.apk"
+        disabled={running}
+        className="h-8 flex-1 font-mono text-sm"
+      />
+    </div>
+  );
+}
+
+function ApkCommandSection({
+  title, value, onChange, hint,
+}: { title: string; value: string; onChange: (v: string) => void; hint: string }) {
+  return (
+    <section className="rounded-lg border border-border bg-card p-5">
+      <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+        {title}
+      </Label>
+      <div className="mt-2 flex items-start gap-2">
+        <span className="mt-2 font-mono text-primary">$</span>
+        <Textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="min-h-[80px] resize-y font-mono text-sm"
+          spellCheck={false}
+        />
+      </div>
+      <p className="mt-2 font-mono text-xs text-muted-foreground">{hint}</p>
+    </section>
+  );
+}
 
 export default Index;
