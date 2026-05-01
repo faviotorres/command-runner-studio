@@ -46,14 +46,28 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
             console — {running ? 'running' : 'idle'}
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClear}
-          className="h-7 text-muted-foreground hover:text-foreground"
-        >
-          <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Clear
-        </Button>
+        <div className="flex items-center gap-1">
+          {reportHref && (
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-7 text-primary hover:text-primary"
+            >
+              <a href={reportHref} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Open Report
+              </a>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClear}
+            className="h-7 text-muted-foreground hover:text-foreground"
+          >
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Clear
+          </Button>
+        </div>
       </div>
 
       <div
