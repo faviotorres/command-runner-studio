@@ -158,10 +158,7 @@ const Index = () => {
   const runApk = (kind: ApkKind) => {
     if (!data || running) return;
     const action = apk[kind];
-    const filename = action.filename.trim();
-    const cmd = action.commandTemplate.split('{filename}').join(filename);
-    // Auto-feed the filename to stdin so interactive prompts are answered.
-    startRun(cmd, `apk-${kind}`, filename);
+    startRun(action.commandTemplate, `apk-${kind}`);
   };
 
   const runAppium = () => {
