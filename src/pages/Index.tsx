@@ -285,23 +285,17 @@ const Index = () => {
                   <TabsContent value="apk" className="mt-0">
                     <div className="space-y-2">
                       <ApkRow
-                        kind="download"
                         icon={<Download className="h-3.5 w-3.5" />}
                         label="Download"
-                        filename={apk.download.filename}
                         running={running}
                         active={activeId === 'apk-download'}
-                        onChange={(filename) => updateApk('download', { filename })}
                         onRun={() => runApk('download')}
                       />
                       <ApkRow
-                        kind="upload"
                         icon={<Upload className="h-3.5 w-3.5" />}
                         label="Upload"
-                        filename={apk.upload.filename}
                         running={running}
                         active={activeId === 'apk-upload'}
-                        onChange={(filename) => updateApk('upload', { filename })}
                         onRun={() => runApk('upload')}
                       />
                     </div>
