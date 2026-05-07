@@ -127,11 +127,14 @@ const Index = () => {
   const appendLine = (kind: LogLine['kind'], text: string) =>
     setLines((prev) => [...prev, { id: crypto.randomUUID(), kind, text, at: Date.now() }]);
 
-  const startRun = (cmd: string, id: string, stdin?: string) => {
+  const startRun = (cmd: string, id: string, label: string, stdin?: string) => {
     const cwd = settings?.workingDir?.trim() || '';
     setLines([]);
     setRunning(true);
     setActiveId(id);
+    setActiveLabel(label);
+    setStartedAt(Date.now());
+    setEndedAt(null);
     if (cwd) appendLine('info', `cwd: ${cwd}`);
     appendLine('info', `$ ${cmd}`);
     if (stdin != null) appendLine('info', `[stdin] ${stdin}`);
@@ -143,11 +146,13 @@ const Index = () => {
         appendLine('end', `\n[process exited with code ${code}]`);
         setRunning(false);
         setStop(null);
+        setEndedAt(Date.now());
       },
       onError: (err) => {
         appendLine('stderr', err);
         setRunning(false);
         setStop(null);
+        setEndedAt(Date.now());
       },
     }, stdin);
     setStop(() => close);
@@ -157,18 +162,18 @@ const Index = () => {
     if (!data || running) return;
     const template = data.commandTemplate || 'echo {tag}';
     const cmd = template.split('{tag}').join(test.tag);
-    startRun(cmd, test.id);
+    startRun(cmd, test.id, test.tag);
   };
 
   const runApk = (kind: ApkKind) => {
     if (!data || running) return;
     const action = apk[kind];
-    startRun(action.commandTemplate, `apk-${kind}`);
+    startRun(action.commandTemplate, `apk-${kind}`, `apk-${kind}`);
   };
 
   const runAppium = () => {
     if (!data || running) return;
-    startRun(appium.commandTemplate, 'appium');
+    startRun(appium.commandTemplate, 'appium', 'appium');
   };
 
   const cancel = () => {
