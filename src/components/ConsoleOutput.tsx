@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import type { LogLine } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Square, Trash2 } from 'lucide-react';
+import { openPath } from '@/lib/api';
+import { toast } from '@/hooks/use-toast';
 
 type Props = {
   lines: LogLine[];
@@ -29,14 +31,18 @@ export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
     return null;
   }, [lines]);
 
-  const reportHref = useMemo(() => {
-    if (!reportPath) return null;
-    if (/^[a-z]+:\/\//i.test(reportPath)) return reportPath;
-    const normalized = reportPath.replace(/\\/g, '/');
-    return normalized.startsWith('/')
-      ? `file://${normalized}`
-      : `file:///${normalized}`;
-  }, [reportPath]);
+  const handleOpenReport = async () => {
+    if (!reportPath) return;
+    if (/^https?:\/\//i.test(reportPath)) {
+      window.open(reportPath, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    try {
+      await openPath(reportPath);
+    } catch (e) {
+      toast({ title: 'Failed to open report', description: String(e), variant: 'destructive' });
+    }
+  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
@@ -47,15 +53,13 @@ export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {reportHref && (
+          {reportPath && (
             <Button
               size="sm"
-              asChild
+              onClick={handleOpenReport}
               className="h-8 bg-primary font-mono text-primary-foreground hover:bg-primary/90"
             >
-              <a href={reportHref} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="mr-1 h-4 w-4" /> Open Report
-              </a>
+              <ExternalLink className="mr-1 h-4 w-4" /> Open Report
             </Button>
           )}
           {onStop ? (

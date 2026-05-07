@@ -166,6 +166,22 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (url.pathname === '/api/open' && req.method === 'GET') {
+      const target = url.searchParams.get('path');
+      if (!target) return send(res, 400, { error: 'Missing path' });
+      const platform = process.platform;
+      const opener =
+        platform === 'darwin' ? 'open' :
+        platform === 'win32'  ? 'start' :
+        'xdg-open';
+      try {
+        spawn(opener, [target], { shell: platform === 'win32', detached: true, stdio: 'ignore' }).unref();
+        return send(res, 200, { ok: true });
+      } catch (err) {
+        return send(res, 500, { error: String(err?.message || err) });
+      }
+    }
+
     send(res, 404, { error: 'Not found' });
   } catch (err) {
     send(res, 500, { error: String(err?.message || err) });
