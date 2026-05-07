@@ -71,3 +71,8 @@ export function runCommand(cmd: string, cwd: string, handlers: RunHandlers, stdi
 
   return () => es.close();
 }
+
+export async function openPath(path: string): Promise<void> {
+  const res = await fetch(`${getApiBase()}/api/open?path=${encodeURIComponent(path)}`);
+  if (!res.ok) throw new Error(`GET /api/open ${res.status}`);
+}
