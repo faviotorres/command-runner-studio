@@ -122,6 +122,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
 
   useEffect(() => {
     if (!running || !startedAt) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [running, startedAt]);
