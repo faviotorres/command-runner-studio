@@ -384,28 +384,12 @@ const Index = () => {
         {/* RIGHT column: fixed full-height console */}
         {data && settings && (
           <section className="flex min-h-0 flex-col">
-            <div className="mb-3 flex items-center justify-between shrink-0">
-              <h2 className="font-mono text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Output
-              </h2>
-              {running && (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={cancel}
-                  className="h-8 font-mono"
-                >
-                  <Square className="mr-1 h-3.5 w-3.5 fill-current" /> Stop
-                </Button>
-              )}
-            </div>
-            <div className="flex-1 min-h-0">
-              <ConsoleOutput
-                lines={lines}
-                running={running}
-                onClear={() => setLines([])}
-              />
-            </div>
+            <ConsoleOutput
+              lines={lines}
+              running={running}
+              onClear={() => setLines([])}
+              onStop={running ? cancel : undefined}
+            />
           </section>
         )}
       </main>

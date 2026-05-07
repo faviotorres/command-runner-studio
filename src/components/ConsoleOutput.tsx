@@ -2,15 +2,16 @@ import { useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import type { LogLine } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Trash2 } from 'lucide-react';
+import { ExternalLink, Square, Trash2 } from 'lucide-react';
 
 type Props = {
   lines: LogLine[];
   running: boolean;
   onClear: () => void;
+  onStop?: () => void;
 };
 
-export function ConsoleOutput({ lines, running, onClear }: Props) {
+export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,10 +62,20 @@ export function ConsoleOutput({ lines, running, onClear }: Props) {
             variant="ghost"
             size="sm"
             onClick={onClear}
-            className="h-7 text-muted-foreground hover:bg-border hover:text-foreground"
+            className="h-8 text-muted-foreground hover:bg-border hover:text-foreground"
           >
             <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Clear
           </Button>
+          {onStop && (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={onStop}
+              className="h-8 font-mono"
+            >
+              <Square className="mr-1.5 h-3.5 w-3.5 fill-current" /> Stop
+            </Button>
+          )}
         </div>
       </div>
 
