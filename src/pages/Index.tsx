@@ -388,8 +388,7 @@ const Index = () => {
         {/* RIGHT column: fixed full-height console */}
         {data && settings && (
           <>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={50} minSize={50} maxSize={75} className="flex min-h-0 flex-col">
+            <ResizableHandle className="w-1 bg-transparent hover:bg-primary/30 transition-colors" />
               <ConsoleOutput
                 lines={lines}
                 running={running}
