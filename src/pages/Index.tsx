@@ -173,10 +173,10 @@ const Index = () => {
   };
 
   return (
-    <Tabs value={section} onValueChange={(v) => setSection(v as Section)} className="min-h-screen bg-background font-sans flex flex-col">
+    <Tabs value={section} onValueChange={(v) => setSection(v as Section)} className="h-screen bg-background font-sans flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="border-b border-border bg-card/40 backdrop-blur">
-        <div className="mx-auto grid max-w-7xl grid-cols-3 items-center px-6 py-2.5">
+      <header className="border-b border-border bg-card/40 backdrop-blur shrink-0">
+        <div className="grid w-full grid-cols-3 items-center px-6 py-2.5">
           <div className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">
               <Terminal className="h-4 w-4" />
