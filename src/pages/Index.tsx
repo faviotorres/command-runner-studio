@@ -179,6 +179,7 @@ const Index = () => {
   const cancel = () => {
     stop?.();
     setRunning(false);
+    setEndedAt(Date.now());
     appendLine('end', '\n[cancelled]');
   };
 
