@@ -389,7 +389,7 @@ const Index = () => {
         {data && settings && (
           <>
             <ResizableHandle className="w-1 bg-transparent hover:bg-primary/30 transition-colors" />
-            <ResizablePanel defaultSize={50} minSize={50} maxSize={75} className="flex min-h-0 flex-col">
+            <ResizablePanel defaultSize={50} minSize={50} maxSize={75} className="flex min-h-0 flex-col pl-3">
               <ConsoleOutput
                 lines={lines}
                 running={running}
