@@ -345,7 +345,8 @@ const Index = () => {
                         id="cmd"
                         value={data.commandTemplate}
                         onChange={(e) => setTemplate(e.target.value)}
-                        className="min-h-[80px] resize-y font-mono text-sm"
+                        rows={5}
+                        className="min-h-[120px] resize-y font-mono text-sm"
                         placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
                         spellCheck={false}
                       />
