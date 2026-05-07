@@ -224,7 +224,7 @@ const Index = () => {
 
       {/* Body */}
       <main className="w-full flex-1 min-h-0 px-6 pt-4 pb-6 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal" className="gap-6">
+        <ResizablePanelGroup direction="horizontal">
         {/* LEFT column: scrollable content */}
         <ResizablePanel defaultSize={50} minSize={25} maxSize={50} className="flex min-h-0 flex-col pr-1">
           {loadError && (
