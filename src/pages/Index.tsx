@@ -383,19 +383,23 @@ const Index = () => {
               </div>
             </>
           )}
-        </div>
+        </ResizablePanel>
 
         {/* RIGHT column: fixed full-height console */}
         {data && settings && (
-          <section className="flex min-h-0 flex-col">
-            <ConsoleOutput
-              lines={lines}
-              running={running}
-              onClear={() => setLines([])}
-              onStop={running ? cancel : undefined}
-            />
-          </section>
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={50} minSize={50} maxSize={75} className="flex min-h-0 flex-col">
+              <ConsoleOutput
+                lines={lines}
+                running={running}
+                onClear={() => setLines([])}
+                onStop={running ? cancel : undefined}
+              />
+            </ResizablePanel>
+          </>
         )}
+        </ResizablePanelGroup>
       </main>
 
       <TestFormDialog
