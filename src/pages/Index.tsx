@@ -245,6 +245,26 @@ const Index = () => {
             <div className="space-y-4">
               <section className="flex flex-col">
                 <TabsContent value="tests" className="mt-0">
+                  <section className="mb-3 rounded-lg border border-border bg-card p-5">
+                    <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                      Command
+                    </Label>
+                    <div className="mt-2 flex items-start gap-2">
+                      <span className="mt-2 font-mono text-primary">$</span>
+                      <Textarea
+                        id="cmd"
+                        value={data.commandTemplate}
+                        onChange={(e) => setTemplate(e.target.value)}
+                        className="min-h-[120px] resize-y font-mono text-sm"
+                        placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
+                        spellCheck={false}
+                      />
+                    </div>
+                    <p className="mt-2 font-mono text-xs text-muted-foreground">
+                      Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
+                    </p>
+                  </section>
+
                   <div className="mb-3 flex items-center gap-2">
                     <div className="relative flex-1">
                       <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
