@@ -223,7 +223,7 @@ const Index = () => {
       {/* Body */}
       <main className="grid w-full flex-1 min-h-0 grid-cols-2 gap-6 px-6 pt-4 pb-6 overflow-hidden">
         {/* LEFT column: scrollable content */}
-        <div className="flex min-h-0 flex-col overflow-y-auto pr-1">
+        <div className="flex min-h-0 flex-col pr-1">
           {loadError && (
             <div className="mb-6 flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-4 font-mono text-sm">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
@@ -242,29 +242,10 @@ const Index = () => {
           )}
 
           {data && settings && (
-            <div className="space-y-4">
-              <section className="flex flex-col">
+            <>
+              {/* Top: scrollable list area */}
+              <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                 <TabsContent value="tests" className="mt-0">
-                  <section className="mb-3 rounded-lg border border-border bg-card p-5">
-                    <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                      Command
-                    </Label>
-                    <div className="mt-2 flex items-start gap-2">
-                      <span className="mt-2 font-mono text-primary">$</span>
-                      <Textarea
-                        id="cmd"
-                        value={data.commandTemplate}
-                        onChange={(e) => setTemplate(e.target.value)}
-                        className="min-h-[120px] resize-y font-mono text-sm"
-                        placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
-                        spellCheck={false}
-                      />
-                    </div>
-                    <p className="mt-2 font-mono text-xs text-muted-foreground">
-                      Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
-                    </p>
-                  </section>
-
                   <div className="mb-3 flex items-center gap-2">
                     <div className="relative flex-1">
                       <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -285,10 +266,7 @@ const Index = () => {
                     </Button>
                   </div>
 
-                  <div
-                    className="space-y-2 overflow-y-auto pr-1"
-                    style={{ maxHeight: 'calc(5.5 * (2.5rem + 1rem + 0.5rem))' }}
-                  >
+                  <div className="space-y-2">
                     {filtered.length === 0 && (
                       <div className="rounded-md border border-dashed border-border p-8 text-center font-mono text-sm text-muted-foreground">
                         {data.tests.length === 0 ? 'No tests yet — create one.' : 'No matches.'}
@@ -351,30 +329,55 @@ const Index = () => {
                     </code>
                   </div>
                 </TabsContent>
-              </section>
+              </div>
 
-              {section === 'apk' ? (
-                <>
+              {/* Bottom: fixed command section */}
+              <div className="shrink-0 mt-3 space-y-3">
+                {section === 'tests' && (
+                  <section className="rounded-lg border border-border bg-card p-5">
+                    <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                      Command
+                    </Label>
+                    <div className="mt-2 flex items-start gap-2">
+                      <span className="mt-2 font-mono text-primary">$</span>
+                      <Textarea
+                        id="cmd"
+                        value={data.commandTemplate}
+                        onChange={(e) => setTemplate(e.target.value)}
+                        className="min-h-[80px] resize-y font-mono text-sm"
+                        placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
+                        spellCheck={false}
+                      />
+                    </div>
+                    <p className="mt-2 font-mono text-xs text-muted-foreground">
+                      Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
+                    </p>
+                  </section>
+                )}
+                {section === 'apk' && (
+                  <>
+                    <ApkCommandSection
+                      title="Download command"
+                      value={apk.download.commandTemplate}
+                      onChange={(v) => updateApk('download', { commandTemplate: v })}
+                    />
+                    <ApkCommandSection
+                      title="Upload command"
+                      value={apk.upload.commandTemplate}
+                      onChange={(v) => updateApk('upload', { commandTemplate: v })}
+                    />
+                  </>
+                )}
+                {section === 'appium' && (
                   <ApkCommandSection
-                    title="Download command"
-                    value={apk.download.commandTemplate}
-                    onChange={(v) => updateApk('download', { commandTemplate: v })}
+                    title="Appium command"
+                    value={appium.commandTemplate}
+                    onChange={(v) => updateAppium(v)}
+                    hint="Runs in the configured working directory."
                   />
-                  <ApkCommandSection
-                    title="Upload command"
-                    value={apk.upload.commandTemplate}
-                    onChange={(v) => updateApk('upload', { commandTemplate: v })}
-                  />
-                </>
-              ) : section === 'appium' ? (
-                <ApkCommandSection
-                  title="Appium command"
-                  value={appium.commandTemplate}
-                  onChange={(v) => updateAppium(v)}
-                  hint="Runs in the configured working directory."
-                />
-              ) : null}
-            </div>
+                )}
+              </div>
+            </>
           )}
         </div>
 
