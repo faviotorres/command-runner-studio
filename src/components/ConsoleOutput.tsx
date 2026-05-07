@@ -29,48 +29,59 @@ function xterm256(n: number): string {
   return `rgb(${conv(r)},${conv(g)},${conv(b)})`;
 }
 
-type Seg = { text: string; fg?: string; bg?: string; bold?: boolean; italic?: boolean; underline?: boolean };
+type AnsiState = { fg?: string; bg?: string; bold?: boolean; italic?: boolean; underline?: boolean };
+type Seg = AnsiState & { text: string };
 
-function parseAnsi(input: string): Seg[] {
-  // Match ESC[...m sequences (also tolerate bare "[...m" since user-shown logs sometimes drop ESC)
-  const regex = /\x1b\[([0-9;]*)m/g;
-  const segs: Seg[] = [];
-  let cur: Seg = { text: '' };
-  let last = 0;
-  let m: RegExpExecArray | null;
-  const push = () => { if (cur.text) segs.push({ ...cur }); cur.text = ''; };
-  while ((m = regex.exec(input)) !== null) {
-    cur.text += input.slice(last, m.index);
-    push();
-    const codes = m[1].split(';').filter(Boolean).map(Number);
-    if (codes.length === 0) codes.push(0);
-    for (let i = 0; i < codes.length; i++) {
-      const c = codes[i];
-      if (c === 0) { cur = { text: '' }; }
-      else if (c === 1) cur.bold = true;
-      else if (c === 3) cur.italic = true;
-      else if (c === 4) cur.underline = true;
-      else if (c === 22) cur.bold = false;
-      else if (c === 23) cur.italic = false;
-      else if (c === 24) cur.underline = false;
-      else if (c === 39) cur.fg = undefined;
-      else if (c === 49) cur.bg = undefined;
-      else if ((c >= 30 && c <= 37) || (c >= 90 && c <= 97)) cur.fg = ANSI_BASIC[c];
-      else if ((c >= 40 && c <= 47) || (c >= 100 && c <= 107)) cur.bg = ANSI_BG[c <= 47 ? c : c - 60];
-      else if (c === 38 && codes[i + 1] === 5) { cur.fg = xterm256(codes[i + 2]); i += 2; }
-      else if (c === 48 && codes[i + 1] === 5) { cur.bg = xterm256(codes[i + 2]); i += 2; }
-      else if (c === 38 && codes[i + 1] === 2) { cur.fg = `rgb(${codes[i+2]},${codes[i+3]},${codes[i+4]})`; i += 4; }
-      else if (c === 48 && codes[i + 1] === 2) { cur.bg = `rgb(${codes[i+2]},${codes[i+3]},${codes[i+4]})`; i += 4; }
-    }
-    last = m.index + m[0].length;
+// Match real ESC[...m sequences AND bare "[...m" (some logs / SSE strip the ESC byte).
+// Also strip common non-color CSI sequences (cursor moves, erase) so they don't show as junk.
+const ANSI_SGR = /(?:\x1b\[|\[)([0-9;]*)m/g;
+const ANSI_NON_SGR = /\x1b\[[0-9;?]*[A-HJKSTfhlmnsu]/g;
+
+function applyCodes(state: AnsiState, raw: string): AnsiState {
+  const codes = raw.split(';').filter(Boolean).map(Number);
+  if (codes.length === 0) codes.push(0);
+  let s = { ...state };
+  for (let i = 0; i < codes.length; i++) {
+    const c = codes[i];
+    if (c === 0) s = {};
+    else if (c === 1) s.bold = true;
+    else if (c === 3) s.italic = true;
+    else if (c === 4) s.underline = true;
+    else if (c === 22) s.bold = false;
+    else if (c === 23) s.italic = false;
+    else if (c === 24) s.underline = false;
+    else if (c === 39) s.fg = undefined;
+    else if (c === 49) s.bg = undefined;
+    else if ((c >= 30 && c <= 37) || (c >= 90 && c <= 97)) s.fg = ANSI_BASIC[c];
+    else if ((c >= 40 && c <= 47) || (c >= 100 && c <= 107)) s.bg = ANSI_BG[c <= 47 ? c : c - 60];
+    else if (c === 38 && codes[i + 1] === 5) { s.fg = xterm256(codes[i + 2]); i += 2; }
+    else if (c === 48 && codes[i + 1] === 5) { s.bg = xterm256(codes[i + 2]); i += 2; }
+    else if (c === 38 && codes[i + 1] === 2) { s.fg = `rgb(${codes[i+2]},${codes[i+3]},${codes[i+4]})`; i += 4; }
+    else if (c === 48 && codes[i + 1] === 2) { s.bg = `rgb(${codes[i+2]},${codes[i+3]},${codes[i+4]})`; i += 4; }
   }
-  cur.text += input.slice(last);
-  push();
-  return segs;
+  return s;
 }
 
-function AnsiText({ text }: { text: string }) {
-  const segs = parseAnsi(text);
+function parseAnsi(input: string, initial: AnsiState): { segs: Seg[]; state: AnsiState } {
+  // Drop non-SGR CSI sequences (cursor moves etc.) — we don't render them.
+  const cleaned = input.replace(ANSI_NON_SGR, (m) => (/[0-9;]*m$/.test(m) ? m : ''));
+  const segs: Seg[] = [];
+  let state: AnsiState = { ...initial };
+  let last = 0;
+  let m: RegExpExecArray | null;
+  ANSI_SGR.lastIndex = 0;
+  while ((m = ANSI_SGR.exec(cleaned)) !== null) {
+    const text = cleaned.slice(last, m.index);
+    if (text) segs.push({ ...state, text });
+    state = applyCodes(state, m[1]);
+    last = m.index + m[0].length;
+  }
+  const tail = cleaned.slice(last);
+  if (tail) segs.push({ ...state, text: tail });
+  return { segs, state };
+}
+
+function AnsiSegs({ segs }: { segs: Seg[] }) {
   return (
     <>
       {segs.map((s, i) => {
