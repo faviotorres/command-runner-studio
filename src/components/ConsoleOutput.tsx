@@ -185,20 +185,27 @@ export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
           </div>
         )}
 
-        {lines.map((l) => (
-          <pre
-            key={l.id}
-            className={cn(
-              'whitespace-pre-wrap break-words',
-              l.kind === 'stdout' && 'text-terminal-text',
-              l.kind === 'stderr' && 'text-terminal-error',
-              l.kind === 'info' && 'text-terminal-prompt glow-text',
-              l.kind === 'end' && 'text-muted-foreground',
-            )}
-          >
-            <AnsiText text={l.text} />
-          </pre>
-        ))}
+        {(() => {
+          let state: AnsiState = {};
+          return lines.map((l) => {
+            const { segs, state: next } = parseAnsi(l.text, state);
+            state = next;
+            return (
+              <pre
+                key={l.id}
+                className={cn(
+                  'whitespace-pre-wrap break-words',
+                  l.kind === 'stdout' && 'text-terminal-text',
+                  l.kind === 'stderr' && 'text-terminal-error',
+                  l.kind === 'info' && 'text-terminal-prompt glow-text',
+                  l.kind === 'end' && 'text-muted-foreground',
+                )}
+              >
+                <AnsiSegs segs={segs} />
+              </pre>
+            );
+          });
+        })()}
 
         {running && <div className="cursor-blink inline-block h-4" />}
       </div>
