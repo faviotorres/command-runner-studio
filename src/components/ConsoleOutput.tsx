@@ -166,7 +166,20 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
+    <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
+      {resultIcon && (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-[2px]"
+          style={{
+            background: resultIcon === '✅'
+              ? 'linear-gradient(90deg, transparent, hsl(142 76% 45%), transparent)'
+              : 'linear-gradient(90deg, transparent, hsl(0 84% 60%), transparent)',
+            boxShadow: resultIcon === '✅'
+              ? '0 0 12px 2px hsl(142 76% 45% / 0.7), 0 0 24px 4px hsl(142 76% 45% / 0.4)'
+              : '0 0 12px 2px hsl(0 84% 60% / 0.7), 0 0 24px 4px hsl(0 84% 60% / 0.4)',
+          }}
+        />
+      )}
       <div className="flex items-center justify-between border-b border-border bg-card/60 px-4 py-2">
         <div className="flex items-center gap-2">
           {startedAt ? (
