@@ -171,7 +171,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
         <div className="flex items-center gap-2">
           {startedAt ? (
             <span className="font-mono text-xs text-muted-foreground">
-              {running ? 'Running' : 'Finished'}
+              {resultIcon ? `${resultIcon} ` : ''}{running ? 'Running' : 'Finished'}
               {label ? ` ${label}` : ''} — {formatDuration((running ? now : (endedAt ?? now)) - startedAt)}
             </span>
           ) : (
