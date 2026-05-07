@@ -142,6 +142,16 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
     return null;
   }, [lines]);
 
+  const resultIcon = useMemo(() => {
+    if (running || !endedAt) return null;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const t = lines[i].text;
+      if (/test\s+passed/i.test(t)) return '✅';
+      if (/test\s+failed/i.test(t)) return '❌';
+    }
+    return null;
+  }, [lines, running, endedAt]);
+
   const handleOpenReport = async () => {
     if (!reportPath) return;
     if (/^https?:\/\//i.test(reportPath)) {
@@ -161,7 +171,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
         <div className="flex items-center gap-2">
           {startedAt ? (
             <span className="font-mono text-xs text-muted-foreground">
-              {running ? 'Running' : 'Finished'}
+              {resultIcon ? `${resultIcon} ` : ''}{running ? 'Running' : 'Finished'}
               {label ? ` ${label}` : ''} — {formatDuration((running ? now : (endedAt ?? now)) - startedAt)}
             </span>
           ) : (
