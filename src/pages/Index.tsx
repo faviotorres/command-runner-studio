@@ -203,7 +203,20 @@ const Index = () => {
               </TabsTrigger>
             </TabsList>
           </div>
-          <div />
+          <div className="flex justify-end">
+            {settings && (
+              <div className="flex items-center gap-2 w-full max-w-sm">
+                <FolderOpen className="h-4 w-4 shrink-0 text-primary" />
+                <Input
+                  id="cwd"
+                  value={settings.workingDir}
+                  onChange={(e) => persistSettings({ ...settings, workingDir: e.target.value })}
+                  className="h-8 font-mono text-xs"
+                  placeholder="/Users/me/projects/my-app"
+                />
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
