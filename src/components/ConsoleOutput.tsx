@@ -1,10 +1,28 @@
 import { useEffect, useMemo, useRef } from 'react';
+import Anser from 'anser';
 import { cn } from '@/lib/utils';
 import type { LogLine } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Square, Trash2 } from 'lucide-react';
 import { openPath } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
+
+function AnsiText({ text }: { text: string }) {
+  const parts = Anser.ansiToJson(text, { use_classes: false, json: true, remove_empty: true });
+  return (
+    <>
+      {parts.map((p, i) => {
+        const style: React.CSSProperties = {};
+        if (p.fg) style.color = `rgb(${p.fg})`;
+        if (p.bg) style.backgroundColor = `rgb(${p.bg})`;
+        if (p.decoration === 'bold') style.fontWeight = 'bold';
+        if (p.decoration === 'italic') style.fontStyle = 'italic';
+        if (p.decoration === 'underline') style.textDecoration = 'underline';
+        return <span key={i} style={style}>{p.content}</span>;
+      })}
+    </>
+  );
+}
 
 type Props = {
   lines: LogLine[];
