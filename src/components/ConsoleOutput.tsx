@@ -158,9 +158,14 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
       <div className="flex items-center justify-between border-b border-border bg-card/60 px-4 py-2">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xs text-muted-foreground">
-            console — {running ? 'running' : 'idle'}
-          </span>
+          {startedAt ? (
+            <span className="font-mono text-xs text-muted-foreground">
+              {running ? 'Running' : 'Finished'}
+              {label ? ` ${label}` : ''} — {formatDuration((running ? now : (endedAt ?? now)) - startedAt)}
+            </span>
+          ) : (
+            <span className="font-mono text-xs text-muted-foreground">console</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {reportPath && (
