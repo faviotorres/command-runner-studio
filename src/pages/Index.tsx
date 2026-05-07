@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { toast } from '@/hooks/use-toast';
 import {
   fetchTests, runCommand, saveTests,
@@ -222,9 +223,10 @@ const Index = () => {
       </header>
 
       {/* Body */}
-      <main className="grid w-full flex-1 min-h-0 grid-cols-2 gap-6 px-6 pt-4 pb-6 overflow-hidden">
+      <main className="w-full flex-1 min-h-0 px-6 pt-4 pb-6 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal" className="gap-6">
         {/* LEFT column: scrollable content */}
-        <div className="flex min-h-0 flex-col pr-1">
+        <ResizablePanel defaultSize={50} minSize={25} maxSize={50} className="flex min-h-0 flex-col pr-1">
           {loadError && (
             <div className="mb-6 flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-4 font-mono text-sm">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
@@ -381,19 +383,23 @@ const Index = () => {
               </div>
             </>
           )}
-        </div>
+        </ResizablePanel>
 
         {/* RIGHT column: fixed full-height console */}
         {data && settings && (
-          <section className="flex min-h-0 flex-col">
-            <ConsoleOutput
-              lines={lines}
-              running={running}
-              onClear={() => setLines([])}
-              onStop={running ? cancel : undefined}
-            />
-          </section>
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={50} minSize={50} maxSize={75} className="flex min-h-0 flex-col">
+              <ConsoleOutput
+                lines={lines}
+                running={running}
+                onClear={() => setLines([])}
+                onStop={running ? cancel : undefined}
+              />
+            </ResizablePanel>
+          </>
         )}
+        </ResizablePanelGroup>
       </main>
 
       <TestFormDialog
