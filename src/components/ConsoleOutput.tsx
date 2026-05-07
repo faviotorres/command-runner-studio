@@ -102,10 +102,29 @@ type Props = {
   running: boolean;
   onClear: () => void;
   onStop?: () => void;
+  label?: string;
+  startedAt?: number | null;
+  endedAt?: number | null;
 };
 
-export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
+function formatDuration(ms: number) {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
+export function ConsoleOutput({ lines, running, onClear, onStop, label, startedAt, endedAt }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!running || !startedAt) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [running, startedAt]);
 
   useEffect(() => {
     const el = scrollRef.current;
