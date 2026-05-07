@@ -404,6 +404,9 @@ const Index = () => {
                 running={running}
                 onClear={() => setLines([])}
                 onStop={running ? cancel : undefined}
+                label={activeLabel}
+                startedAt={startedAt}
+                endedAt={endedAt}
               />
             </ResizablePanel>
           </>
