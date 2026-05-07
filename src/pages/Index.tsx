@@ -47,6 +47,9 @@ const Index = () => {
   const [running, setRunning] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [stop, setStop] = useState<(() => void) | null>(null);
+  const [activeLabel, setActiveLabel] = useState<string>('');
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [endedAt, setEndedAt] = useState<number | null>(null);
 
   // Load tests + settings
   useEffect(() => {
