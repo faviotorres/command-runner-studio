@@ -58,15 +58,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
               </a>
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClear}
-            className="h-8 text-muted-foreground hover:bg-border hover:text-foreground"
-          >
-            <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Clear
-          </Button>
-          {onStop && (
+          {onStop ? (
             <Button
               size="sm"
               variant="destructive"
@@ -74,6 +66,15 @@ export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
               className="h-8 font-mono"
             >
               <Square className="mr-1.5 h-3.5 w-3.5 fill-current" /> Stop
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClear}
+              className="h-8 text-muted-foreground hover:bg-border hover:text-foreground"
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Clear
             </Button>
           )}
         </div>
