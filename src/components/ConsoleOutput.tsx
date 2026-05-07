@@ -108,7 +108,7 @@ type Props = {
 };
 
 function formatDuration(ms: number) {
-  const total = Math.floor(ms / 1000);
+  const total = Math.max(0, Math.floor(ms / 1000));
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
@@ -122,6 +122,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
 
   useEffect(() => {
     if (!running || !startedAt) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [running, startedAt]);
