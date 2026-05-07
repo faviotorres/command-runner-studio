@@ -123,7 +123,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
               l.kind === 'end' && 'text-muted-foreground',
             )}
           >
-            {l.text}
+            <AnsiText text={l.text} />
           </pre>
         ))}
 
