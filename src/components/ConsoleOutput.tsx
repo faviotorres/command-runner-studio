@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { LogLine } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -102,10 +102,29 @@ type Props = {
   running: boolean;
   onClear: () => void;
   onStop?: () => void;
+  label?: string;
+  startedAt?: number | null;
+  endedAt?: number | null;
 };
 
-export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
+function formatDuration(ms: number) {
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+
+export function ConsoleOutput({ lines, running, onClear, onStop, label, startedAt, endedAt }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!running || !startedAt) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [running, startedAt]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -139,9 +158,14 @@ export function ConsoleOutput({ lines, running, onClear, onStop }: Props) {
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
       <div className="flex items-center justify-between border-b border-border bg-card/60 px-4 py-2">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xs text-muted-foreground">
-            console — {running ? 'running' : 'idle'}
-          </span>
+          {startedAt ? (
+            <span className="font-mono text-xs text-muted-foreground">
+              {running ? 'Running' : 'Finished'}
+              {label ? ` ${label}` : ''} — {formatDuration((running ? now : (endedAt ?? now)) - startedAt)}
+            </span>
+          ) : (
+            <span className="font-mono text-xs text-muted-foreground">console</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {reportPath && (
