@@ -402,7 +402,7 @@ const Index = () => {
               <ConsoleOutput
                 lines={lines}
                 running={running}
-                onClear={() => setLines([])}
+                onClear={() => { setLines([]); setStartedAt(null); setEndedAt(null); setActiveLabel(''); setActiveId(null); }}
                 onStop={running ? cancel : undefined}
                 label={activeLabel}
                 startedAt={startedAt}
