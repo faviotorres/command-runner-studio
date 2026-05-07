@@ -353,47 +353,7 @@ const Index = () => {
                 </TabsContent>
               </section>
 
-              <section className="rounded-lg border border-border bg-card p-5">
-                <Label htmlFor="cwd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                  Working directory
-                </Label>
-                <div className="mt-2 flex items-center gap-2">
-                  <FolderOpen className="h-4 w-4 shrink-0 text-primary" />
-                  <Input
-                    id="cwd"
-                    value={settings.workingDir}
-                    onChange={(e) => persistSettings({ ...settings, workingDir: e.target.value })}
-                    className="font-mono"
-                    placeholder="/Users/me/projects/my-app"
-                  />
-                </div>
-                <p className="mt-2 font-mono text-xs text-muted-foreground">
-                  Commands are executed from this directory. Saved to{' '}
-                  <code className="text-primary">server/settings.json</code>.
-                </p>
-              </section>
-
-              {section === 'tests' ? (
-                <section className="rounded-lg border border-border bg-card p-5">
-                  <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                    Command
-                  </Label>
-                  <div className="mt-2 flex items-start gap-2">
-                    <span className="mt-2 font-mono text-primary">$</span>
-                    <Textarea
-                      id="cmd"
-                      value={data.commandTemplate}
-                      onChange={(e) => setTemplate(e.target.value)}
-                      className="min-h-[120px] resize-y font-mono text-sm"
-                      placeholder={'echo "Running {tag}"\nnpm test -- --tag {tag}'}
-                      spellCheck={false}
-                    />
-                  </div>
-                  <p className="mt-2 font-mono text-xs text-muted-foreground">
-                    Use <code className="text-primary">{'{tag}'}</code> as a placeholder for the test's tag.
-                  </p>
-                </section>
-              ) : section === 'apk' ? (
+              {section === 'apk' ? (
                 <>
                   <ApkCommandSection
                     title="Download command"
@@ -406,14 +366,14 @@ const Index = () => {
                     onChange={(v) => updateApk('upload', { commandTemplate: v })}
                   />
                 </>
-              ) : (
+              ) : section === 'appium' ? (
                 <ApkCommandSection
                   title="Appium command"
                   value={appium.commandTemplate}
                   onChange={(v) => updateAppium(v)}
                   hint="Runs in the configured working directory."
                 />
-              )}
+              ) : null}
             </div>
           )}
         </div>
