@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -444,12 +445,12 @@ function ApkCommandSection({
       <Label className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
         {title}
       </Label>
-      <div className="mt-2 flex items-start gap-2">
-        <span className="mt-2 font-mono text-primary">$</span>
-        <Textarea
+      <div className="mt-2 flex items-center gap-2">
+        <span className="font-mono text-primary">$</span>
+        <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="min-h-[40px] resize-y font-mono text-sm"
+          className="font-mono text-sm"
           spellCheck={false}
         />
       </div>
