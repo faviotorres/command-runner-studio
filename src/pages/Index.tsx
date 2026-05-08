@@ -35,6 +35,26 @@ const DEFAULT_APPIUM: AppiumConfig = {
 type Section = 'tests' | 'apk' | 'appium';
 type ApkKind = 'download' | 'upload';
 
+type RunState = {
+  lines: LogLine[];
+  running: boolean;
+  activeId: string | null;
+  activeLabel: string;
+  startedAt: number | null;
+  endedAt: number | null;
+  stop: (() => void) | null;
+};
+
+const initialRun: RunState = {
+  lines: [],
+  running: false,
+  activeId: null,
+  activeLabel: '',
+  startedAt: null,
+  endedAt: null,
+  stop: null,
+};
+
 const Index = () => {
   const [data, setData] = useState<TestsFile | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -43,13 +63,18 @@ const Index = () => {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Test | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [lines, setLines] = useState<LogLine[]>([]);
-  const [running, setRunning] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [stop, setStop] = useState<(() => void) | null>(null);
-  const [activeLabel, setActiveLabel] = useState<string>('');
-  const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [endedAt, setEndedAt] = useState<number | null>(null);
+  const [runs, setRuns] = useState<Record<Section, RunState>>({
+    tests: { ...initialRun },
+    apk: { ...initialRun },
+    appium: { ...initialRun },
+  });
+
+  const updateRun = (sec: Section, patch: Partial<RunState> | ((r: RunState) => Partial<RunState>)) =>
+    setRuns((prev) => {
+      const cur = prev[sec];
+      const next = typeof patch === 'function' ? patch(cur) : patch;
+      return { ...prev, [sec]: { ...cur, ...next } };
+    });
 
   // Load tests + settings
   useEffect(() => {
@@ -124,64 +149,66 @@ const Index = () => {
     persist({ ...data, appium: { commandTemplate } });
   };
 
-  const appendLine = (kind: LogLine['kind'], text: string) =>
-    setLines((prev) => [...prev, { id: crypto.randomUUID(), kind, text, at: Date.now() }]);
+  const appendLine = (sec: Section, kind: LogLine['kind'], text: string) =>
+    updateRun(sec, (r) => ({
+      lines: [...r.lines, { id: crypto.randomUUID(), kind, text, at: Date.now() }],
+    }));
 
-  const startRun = (cmd: string, id: string, label: string, stdin?: string) => {
+  const startRun = (sec: Section, cmd: string, id: string, label: string, stdin?: string) => {
     const cwd = settings?.workingDir?.trim() || '';
-    setLines([]);
-    setRunning(true);
-    setActiveId(id);
-    setActiveLabel(label);
-    setStartedAt(Date.now());
-    setEndedAt(null);
-    if (cwd) appendLine('info', `cwd: ${cwd}`);
-    appendLine('info', `$ ${cmd}`);
-    if (stdin != null) appendLine('info', `[stdin] ${stdin}`);
+    updateRun(sec, {
+      lines: [],
+      running: true,
+      activeId: id,
+      activeLabel: label,
+      startedAt: Date.now(),
+      endedAt: null,
+    });
+    if (cwd) appendLine(sec, 'info', `cwd: ${cwd}`);
+    appendLine(sec, 'info', `$ ${cmd}`);
+    if (stdin != null) appendLine(sec, 'info', `[stdin] ${stdin}`);
 
     const close = runCommand(cmd, cwd, {
-      onStdout: (c) => appendLine('stdout', c),
-      onStderr: (c) => appendLine('stderr', c),
+      onStdout: (c) => appendLine(sec, 'stdout', c),
+      onStderr: (c) => appendLine(sec, 'stderr', c),
       onEnd: (code) => {
-        appendLine('end', `\n[process exited with code ${code}]`);
-        setRunning(false);
-        setStop(null);
-        setEndedAt(Date.now());
+        appendLine(sec, 'end', `\n[process exited with code ${code}]`);
+        updateRun(sec, { running: false, stop: null, endedAt: Date.now() });
       },
       onError: (err) => {
-        appendLine('stderr', err);
-        setRunning(false);
-        setStop(null);
-        setEndedAt(Date.now());
+        appendLine(sec, 'stderr', err);
+        updateRun(sec, { running: false, stop: null, endedAt: Date.now() });
       },
     }, stdin);
-    setStop(() => close);
+    updateRun(sec, { stop: () => close });
   };
 
   const run = (test: Test) => {
-    if (!data || running) return;
+    if (!data || runs.tests.running) return;
     const template = data.commandTemplate || 'echo {tag}';
     const cmd = template.split('{tag}').join(test.tag);
-    startRun(cmd, test.id, test.tag);
+    startRun('tests', cmd, test.id, test.tag);
   };
 
   const runApk = (kind: ApkKind) => {
-    if (!data || running) return;
+    if (!data || runs.apk.running) return;
     const action = apk[kind];
-    startRun(action.commandTemplate, `apk-${kind}`, `apk-${kind}`);
+    startRun('apk', action.commandTemplate, `apk-${kind}`, `apk-${kind}`);
   };
 
   const runAppium = () => {
-    if (!data || running) return;
-    startRun(appium.commandTemplate, 'appium', 'appium');
+    if (!data || runs.appium.running) return;
+    startRun('appium', appium.commandTemplate, 'appium', 'appium');
   };
 
-  const cancel = () => {
-    stop?.();
-    setRunning(false);
-    setEndedAt(Date.now());
-    appendLine('end', '\n[cancelled]');
+  const cancel = (sec: Section) => {
+    const r = runs[sec];
+    r.stop?.();
+    updateRun(sec, { running: false, endedAt: Date.now() });
+    appendLine(sec, 'end', '\n[cancelled]');
   };
+
+  const currentRun = runs[section];
 
   return (
     <Tabs value={section} onValueChange={(v) => setSection(v as Section)} className="h-screen bg-background font-sans flex flex-col overflow-hidden">
@@ -204,13 +231,13 @@ const Index = () => {
           <div className="flex justify-center">
             <TabsList className="h-9 bg-secondary font-mono">
               <TabsTrigger value="appium" className="font-mono text-xs uppercase tracking-wider">
-                Appium
+                Appium{runs.appium.running ? ' •' : ''}
               </TabsTrigger>
               <TabsTrigger value="apk" className="font-mono text-xs uppercase tracking-wider">
-                APK
+                APK{runs.apk.running ? ' •' : ''}
               </TabsTrigger>
               <TabsTrigger value="tests" className="font-mono text-xs uppercase tracking-wider">
-                Tests
+                Tests{runs.tests.running ? ' •' : ''}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -271,7 +298,7 @@ const Index = () => {
                     <Button
                       size="sm"
                       onClick={() => { setEditing(null); setDialogOpen(true); }}
-                      disabled={running}
+                      disabled={runs.tests.running}
                       className="h-9 shrink-0 bg-primary font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
                     >
                       <Plus className="mr-1 h-4 w-4" /> New
@@ -288,8 +315,8 @@ const Index = () => {
                       <TestRow
                         key={t.id}
                         test={t}
-                        running={running}
-                        active={activeId === t.id}
+                        running={runs.tests.running}
+                        active={runs.tests.activeId === t.id}
                         onRun={() => run(t)}
                         onEdit={() => { setEditing(t); setDialogOpen(true); }}
                         onDelete={() => remove(t.id)}
@@ -303,15 +330,15 @@ const Index = () => {
                     <ApkRow
                       icon={<Download className="h-3.5 w-3.5" />}
                       label="Download"
-                      running={running}
-                      active={activeId === 'apk-download'}
+                      running={runs.apk.running}
+                      active={runs.apk.activeId === 'apk-download'}
                       onRun={() => runApk('download')}
                     />
                     <ApkRow
                       icon={<Upload className="h-3.5 w-3.5" />}
                       label="Upload"
-                      running={running}
-                      active={activeId === 'apk-upload'}
+                      running={runs.apk.running}
+                      active={runs.apk.activeId === 'apk-upload'}
                       onRun={() => runApk('upload')}
                     />
                   </div>
@@ -321,13 +348,13 @@ const Index = () => {
                   <div
                     className={
                       'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50 hover:bg-secondary' +
-                      (activeId === 'appium' ? ' border-primary/70 shadow-glow' : '')
+                      (runs.appium.activeId === 'appium' ? ' border-primary/70 shadow-glow' : '')
                     }
                   >
                     <Button
                       size="sm"
                       onClick={runAppium}
-                      disabled={running}
+                      disabled={runs.appium.running}
                       className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
                     >
                       <Play className="h-3.5 w-3.5 fill-current" />
@@ -400,13 +427,13 @@ const Index = () => {
             <ResizableHandle className="w-1 bg-transparent hover:bg-primary/30 transition-colors" />
             <ResizablePanel defaultSize={50} minSize={50} maxSize={75} className="flex min-h-0 flex-col pl-3">
               <ConsoleOutput
-                lines={lines}
-                running={running}
-                onClear={() => { setLines([]); setStartedAt(null); setEndedAt(null); setActiveLabel(''); setActiveId(null); }}
-                onStop={running ? cancel : undefined}
-                label={activeLabel}
-                startedAt={startedAt}
-                endedAt={endedAt}
+                lines={currentRun.lines}
+                running={currentRun.running}
+                onClear={() => updateRun(section, { ...initialRun })}
+                onStop={currentRun.running ? () => cancel(section) : undefined}
+                label={currentRun.activeLabel}
+                startedAt={currentRun.startedAt}
+                endedAt={currentRun.endedAt}
               />
             </ResizablePanel>
           </>
