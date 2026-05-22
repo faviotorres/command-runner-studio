@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download, ExternalLink, Square, Trash2 } from 'lucide-react';
 import { openPath } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Standard ANSI 16-color palette (xterm-ish)
 const ANSI_BASIC: Record<number, string> = {
