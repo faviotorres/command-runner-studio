@@ -21,6 +21,7 @@ export type AppiumConfig = {
 export type RunResult = {
   at: number;
   success: boolean;
+  durationMs?: number;
 };
 
 export type TestsFile = {

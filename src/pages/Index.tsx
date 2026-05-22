@@ -157,12 +157,12 @@ const Index = () => {
       lines: [...r.lines, { id: crypto.randomUUID(), kind, text, at: Date.now() }],
     }));
 
-  const saveResult = (id: string, success: boolean) => {
+  const saveResult = (id: string, success: boolean, durationMs: number) => {
     setData((prev) => {
       if (!prev) return prev;
       const next: TestsFile = {
         ...prev,
-        results: { ...(prev.results ?? {}), [id]: { at: Date.now(), success } },
+        results: { ...(prev.results ?? {}), [id]: { at: Date.now(), success, durationMs } },
       };
       saveTests(next).catch((e) =>
         toast({ title: 'Save failed', description: String(e), variant: 'destructive' }),
@@ -186,12 +186,13 @@ const Index = () => {
     const cwd = settings?.workingDir?.trim() || '';
     let cancelled = false;
     let buffer = '';
+    const startedAt = Date.now();
     updateRun(sec, {
       lines: [],
       running: true,
       activeId: id,
       activeLabel: label,
-      startedAt: Date.now(),
+      startedAt,
       endedAt: null,
       cancelled: false,
     });
@@ -204,10 +205,11 @@ const Index = () => {
       onStderr: (c) => { buffer += c + '\n'; appendLine(sec, 'stderr', c); },
       onEnd: (code) => {
         appendLine(sec, 'end', `\n[process exited with code ${code}]`);
-        updateRun(sec, { running: false, stop: null, endedAt: Date.now() });
+        const endedAt = Date.now();
+        updateRun(sec, { running: false, stop: null, endedAt });
         if (cancelled) return;
         const result = detectResult(buffer);
-        if (result !== null) saveResult(id, result);
+        if (result !== null) saveResult(id, result, endedAt - startedAt);
       },
       onError: (err) => {
         appendLine(sec, 'stderr', err);
