@@ -480,10 +480,11 @@ type ApkRowProps = {
   label: string;
   running: boolean;
   active: boolean;
+  result?: RunResult;
   onRun: () => void;
 };
 
-function ApkRow({ icon, label, running, active, onRun }: ApkRowProps) {
+function ApkRow({ icon, label, running, active, result, onRun }: ApkRowProps) {
   return (
     <div
       className={
@@ -502,6 +503,9 @@ function ApkRow({ icon, label, running, active, onRun }: ApkRowProps) {
       <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
         {icon}
         <span>{label}</span>
+      </div>
+      <div className="ml-auto">
+        <RunResultBadge result={result} />
       </div>
     </div>
   );
