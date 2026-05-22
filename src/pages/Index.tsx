@@ -156,8 +156,23 @@ const Index = () => {
       lines: [...r.lines, { id: crypto.randomUUID(), kind, text, at: Date.now() }],
     }));
 
+  const saveResult = (id: string, success: boolean) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const next: TestsFile = {
+        ...prev,
+        results: { ...(prev.results ?? {}), [id]: { at: Date.now(), success } },
+      };
+      saveTests(next).catch((e) =>
+        toast({ title: 'Save failed', description: String(e), variant: 'destructive' }),
+      );
+      return next;
+    });
+  };
+
   const startRun = (sec: Section, cmd: string, id: string, label: string, stdin?: string) => {
     const cwd = settings?.workingDir?.trim() || '';
+    let cancelled = false;
     updateRun(sec, {
       lines: [],
       running: true,
@@ -165,6 +180,7 @@ const Index = () => {
       activeLabel: label,
       startedAt: Date.now(),
       endedAt: null,
+      cancelled: false,
     });
     if (cwd) appendLine(sec, 'info', `cwd: ${cwd}`);
     appendLine(sec, 'info', `$ ${cmd}`);
@@ -176,13 +192,15 @@ const Index = () => {
       onEnd: (code) => {
         appendLine(sec, 'end', `\n[process exited with code ${code}]`);
         updateRun(sec, { running: false, stop: null, endedAt: Date.now() });
+        if (!cancelled) saveResult(id, code === 0);
       },
       onError: (err) => {
         appendLine(sec, 'stderr', err);
         updateRun(sec, { running: false, stop: null, endedAt: Date.now() });
+        if (!cancelled) saveResult(id, false);
       },
     }, stdin);
-    updateRun(sec, { stop: () => close });
+    updateRun(sec, { stop: () => { cancelled = true; close(); } });
   };
 
   const run = (test: Test) => {
