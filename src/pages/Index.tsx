@@ -174,9 +174,10 @@ const Index = () => {
     persist({ ...data, apk: nextApk });
   };
 
-  const updateAppium = (commandTemplate: string) => {
+  const updateAppiumItem = (id: string, commandTemplate: string) => {
     if (!data) return;
-    persist({ ...data, appium: { commandTemplate } });
+    const items = appium.items.map((it) => (it.id === id ? { ...it, commandTemplate } : it));
+    persist({ ...data, appium: { ...appium, items } });
   };
 
   const appendLine = (sec: Section, kind: LogLine['kind'], text: string) =>
