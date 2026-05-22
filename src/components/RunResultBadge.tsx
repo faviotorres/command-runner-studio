@@ -1,6 +1,21 @@
+import { useEffect, useState }  from 'react';
 import type { RunResult } from '@/lib/types';
 
-function formatWhen(at: number) {
+function formatRelative(at: number) {
+  const diff = Date.now() - at;
+  const seconds = Math.floor(diff / 1000);
+
+  if (seconds < 60) return 'just now';
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return minutes === 1 ? '1 min ago' : `${minutes} mins ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours === 1 ? '1 hr ago' : `${hours} hrs ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return days === 1 ? '1 day ago' : `${days} days ago`;
+
   const d = new Date(at);
   return d.toLocaleString(undefined, {
     month: 'short',
@@ -17,6 +32,13 @@ function formatDuration(ms?: number) {
 }
 
 export function RunResultBadge({ result }: { result?: RunResult }) {
+  const [, tick] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => tick((n) => n + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   if (!result) return null;
   return (
     <div
@@ -24,7 +46,7 @@ export function RunResultBadge({ result }: { result?: RunResult }) {
       title={`Last run: ${new Date(result.at).toLocaleString()} — ${result.success ? 'passed' : 'failed'}${result.durationMs != null ? ` in ${formatDuration(result.durationMs)}` : ''}`}
     >
       <span aria-hidden>{result.success ? '✅' : '❌'}</span>
-      <span>{formatWhen(result.at)}</span>
+      <span>{formatRelative(result.at)}</span>
       {result.durationMs != null && (
         <span className="text-muted-foreground/60">· {formatDuration(result.durationMs)}</span>
       )}
