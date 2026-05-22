@@ -12,10 +12,11 @@ import {
   fetchTests, runCommand, saveTests,
   fetchSettings, saveSettings,
 } from '@/lib/api';
-import type { ApkConfig, AppiumConfig, LogLine, Settings, Test, TestsFile } from '@/lib/types';
+import type { ApkConfig, AppiumConfig, LogLine, RunResult, Settings, Test, TestsFile } from '@/lib/types';
 import { ConsoleOutput } from '@/components/ConsoleOutput';
 import { TestRow } from '@/components/TestRow';
 import { TestFormDialog } from '@/components/TestFormDialog';
+import { RunResultBadge } from '@/components/RunResultBadge';
 
 const DEFAULT_APK: ApkConfig = {
   download: {
