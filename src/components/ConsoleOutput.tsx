@@ -195,7 +195,10 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
                   {' '}<span className="text-primary">{label}</span>
                 </>
               ) : ''}
-              {' '}— {formatDuration((running ? now : (endedAt ?? now)) - startedAt)}
+              {' '}—{' '}
+              <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 font-mono text-xs text-black">
+                {formatDuration((running ? now : (endedAt ?? now)) - startedAt)}
+              </span>
             </span>
           ) : (
             <span className="font-mono text-xs text-black">console</span>
