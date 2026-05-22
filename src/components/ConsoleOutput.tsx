@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { LogLine } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Square, Trash2 } from 'lucide-react';
+import { ExternalLink, Loader2, Square, Trash2 } from 'lucide-react';
 import { openPath } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
@@ -189,7 +189,8 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
         <div className="relative z-[2] flex items-center gap-2">
           {startedAt ? (
             <span className="font-mono text-xs text-black">
-              {resultIcon ? `${resultIcon} ` : ''}{running ? 'Running' : 'Finished'}
+              {resultIcon ? `${resultIcon} ` : ''}
+              {running && <Loader2 className="inline h-3.5 w-3.5 animate-spin text-primary" />}
               {label ? (
                 <>
                   {' '}<span className="text-primary">{label}</span>
