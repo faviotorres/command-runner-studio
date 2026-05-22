@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download, ExternalLink, Square, Trash2 } from 'lucide-react';
 import { openPath } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Standard ANSI 16-color palette (xterm-ish)
 const ANSI_BASIC: Record<number, string> = {
@@ -239,44 +240,63 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
             <span className="font-mono text-xs text-black">console</span>
           )}
         </div>
-        <div className="relative z-[2] flex items-center gap-2">
-          {reportPath && (
-            <Button
-              size="sm"
-              onClick={handleOpenReport}
-              className="h-8 bg-primary font-mono text-primary-foreground hover:bg-primary/90"
-            >
-              <ExternalLink className="mr-1 h-4 w-4" /> Open Report
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleDownloadLogs}
-            className="h-8 font-mono border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-          >
-            <Download className="mr-1 h-4 w-4" /> Download
-          </Button>
-          {onStop ? (
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={onStop}
-              className="h-8 font-mono"
-            >
-              <Square className="mr-1.5 h-3.5 w-3.5 fill-current" /> Stop
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClear}
-              className="h-8 text-muted-foreground hover:bg-border hover:text-foreground"
-            >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Clear
-            </Button>
-          )}
+        <div className="relative z-[2] flex items-center gap-1.5">
+          <TooltipProvider delayDuration={0}>
+            {reportPath && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={handleOpenReport}
+                    aria-label="Open Report"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 text-black hover:bg-gray-200"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Open Report</TooltipContent>
+              </Tooltip>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={handleDownloadLogs}
+                  aria-label="Download Logs"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 text-black hover:bg-gray-200"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>Download Logs</TooltipContent>
+            </Tooltip>
+            {onStop ? (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={onStop}
+                className="h-8 font-mono"
+              >
+                <Square className="mr-1.5 h-3.5 w-3.5 fill-current" /> Stop
+              </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={onClear}
+                    aria-label="Clear"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 text-black hover:bg-gray-200"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>Clear</TooltipContent>
+              </Tooltip>
+            )}
+          </TooltipProvider>
         </div>
+
       </div>
 
       <div
