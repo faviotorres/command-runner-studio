@@ -249,6 +249,14 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
               <ExternalLink className="mr-1 h-4 w-4" /> Open Report
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDownloadLogs}
+            className="h-8 font-mono border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+          >
+            <Download className="mr-1 h-4 w-4" /> Download
+          </Button>
           {onStop ? (
             <Button
               size="sm"
