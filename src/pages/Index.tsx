@@ -583,4 +583,58 @@ function ApkCommandSection({
   );
 }
 
+type AppiumItemRowProps = {
+  item: AppiumItem;
+  running: boolean;
+  active: boolean;
+  result?: RunResult;
+  onRun: () => void;
+  onChange: (v: string) => void;
+};
+
+function AppiumItemRow({ item, running, active, result, onRun, onChange }: AppiumItemRowProps) {
+  return (
+    <div
+      className={
+        'rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50' +
+        (active ? ' border-primary/70 shadow-glow' : '')
+      }
+    >
+      <div className="flex items-center gap-3">
+        <Button
+          size="sm"
+          onClick={onRun}
+          disabled={running}
+          className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+        >
+          {active && running ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Play className="h-3.5 w-3.5 fill-current" />
+          )}
+        </Button>
+        <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
+          <Cpu className="h-3.5 w-3.5" />
+          <span>{item.label}</span>
+        </div>
+        <div className="ml-auto">
+          <RunResultBadge result={result} />
+        </div>
+      </div>
+      <div className="mt-2 flex items-start gap-2">
+        <span className="mt-2 font-mono text-primary">$</span>
+        <Textarea
+          value={item.commandTemplate}
+          onChange={(e) => onChange(e.target.value)}
+          rows={Math.min(8, Math.max(2, item.commandTemplate.split('\n').length))}
+          className="resize-y font-mono text-xs bg-gray-100"
+          spellCheck={false}
+          placeholder="echo 'hello'"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default Index;
+
