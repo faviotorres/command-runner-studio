@@ -167,26 +167,26 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
-      {resultIcon && (
-        <>
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 h-[2px]"
-            style={{
-              background: resultIcon === '✅' ? 'hsl(142 76% 45%)' : 'hsl(0 84% 60%)',
-            }}
-          />
-          <div
-            className="pointer-events-none absolute inset-x-0 top-[2px] h-6"
-            style={{
-              background: resultIcon === '✅'
-                ? 'linear-gradient(180deg, hsl(142 76% 45% / 0.5), transparent)'
-                : 'linear-gradient(180deg, hsl(0 84% 60% / 0.5), transparent)',
-            }}
-          />
-        </>
-      )}
-      <div className="flex items-center justify-between border-b border-border bg-white px-4 py-2 text-black">
-        <div className="flex items-center gap-2">
+      <div className="relative flex items-center justify-between border-b border-border bg-white px-4 py-2 text-black">
+        {resultIcon && (
+          <>
+            <div
+              className="pointer-events-none absolute inset-x-0 top-0 h-[2px] z-[1]"
+              style={{
+                background: resultIcon === '✅' ? 'hsl(142 76% 45%)' : 'hsl(0 84% 60%)',
+              }}
+            />
+            <div
+              className="pointer-events-none absolute inset-x-0 top-[2px] bottom-0 z-[1]"
+              style={{
+                background: resultIcon === '✅'
+                  ? 'linear-gradient(180deg, hsl(142 76% 45% / 0.5), transparent)'
+                  : 'linear-gradient(180deg, hsl(0 84% 60% / 0.5), transparent)',
+              }}
+            />
+          </>
+        )}
+        <div className="relative z-[2] flex items-center gap-2">
           {startedAt ? (
             <span className="font-mono text-xs text-black">
               {resultIcon ? `${resultIcon} ` : ''}{running ? 'Running' : 'Finished'}
@@ -196,7 +196,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
             <span className="font-mono text-xs text-black">console</span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="relative z-[2] flex items-center gap-2">
           {reportPath && (
             <Button
               size="sm"
