@@ -249,6 +249,11 @@ const Index = () => {
     startRun('appium', appium.commandTemplate, 'appium', 'appium');
   };
 
+  const runRestartAppium = () => {
+    if (!data || runs.appium.running) return;
+    startRun('appium', 'echo "restarting appium"\necho "done"', 'appium-restart', 'Restart Appium');
+  };
+
   const cancel = (sec: Section) => {
     const r = runs[sec];
     r.stop?.();
