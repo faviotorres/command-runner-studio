@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Terminal, AlertTriangle, Square, FolderOpen, Play, Download, Upload, Cpu } from 'lucide-react';
+import { Plus, Search, Terminal, AlertTriangle, Square, FolderOpen, Play, Download, Upload, Cpu, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -514,7 +514,11 @@ function ApkRow({ icon, label, running, active, result, onRun }: ApkRowProps) {
         disabled={running}
         className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
       >
-        <Play className="h-3.5 w-3.5 fill-current" />
+        {active && running ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <Play className="h-3.5 w-3.5 fill-current" />
+        )}
       </Button>
       <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
         {icon}
