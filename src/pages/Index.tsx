@@ -389,6 +389,7 @@ const Index = () => {
                     <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
                       {appium.commandTemplate}
                     </code>
+                    <RunResultBadge result={data.results?.['appium']} />
                   </div>
                 </TabsContent>
               </div>
