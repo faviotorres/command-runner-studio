@@ -353,6 +353,7 @@ const Index = () => {
                       label="Download"
                       running={runs.apk.running}
                       active={runs.apk.activeId === 'apk-download'}
+                      result={data.results?.['apk-download']}
                       onRun={() => runApk('download')}
                     />
                     <ApkRow
@@ -360,6 +361,7 @@ const Index = () => {
                       label="Upload"
                       running={runs.apk.running}
                       active={runs.apk.activeId === 'apk-upload'}
+                      result={data.results?.['apk-upload']}
                       onRun={() => runApk('upload')}
                     />
                   </div>
