@@ -35,8 +35,18 @@ export function RunResultBadge({ result }: { result?: RunResult }) {
   const [, tick] = useState(0);
 
   useEffect(() => {
-    const id = setInterval(() => tick((n) => n + 1), 60_000);
-    return () => clearInterval(id);
+    const bump = () => tick((n) => n + 1);
+    const id = setInterval(bump, 60_000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') bump();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', bump);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', bump);
+    };
   }, []);
 
   if (!result) return null;
