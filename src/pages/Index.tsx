@@ -66,6 +66,18 @@ const Index = () => {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Test | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [testEnv, setTestEnv] = useState<'Local' | 'Labs'>('Local');
+
+  const ECHO_ENV_RE = /echo\s+"(Local|Labs)"/;
+  const handleTestEnvChange = (val: 'Local' | 'Labs') => {
+    if (!data) return;
+    setTestEnv(val);
+    const current = data.commandTemplate || '';
+    const next = ECHO_ENV_RE.test(current)
+      ? current.replace(ECHO_ENV_RE, `echo "${val}"`)
+      : (current ? `${current}\necho "${val}"` : `echo "${val}"`);
+    setTemplate(next);
+  };
   const [runs, setRuns] = useState<Record<Section, RunState>>({
     tests: { ...initialRun },
     apk: { ...initialRun },
