@@ -249,7 +249,7 @@ const Index = () => {
                   id="cwd"
                   value={settings.workingDir}
                   onChange={(e) => persistSettings({ ...settings, workingDir: e.target.value })}
-                  className="h-8 font-mono text-xs"
+                  className="h-8 font-mono text-xs bg-[#001E60] text-white border-white/20 placeholder:text-white/50"
                   placeholder="/Users/me/projects/my-app"
                 />
               </div>

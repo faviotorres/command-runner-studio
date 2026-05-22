@@ -43,7 +43,7 @@
     /* Terminal stays dark – it's a terminal panel */
     --terminal-bg: 0 0% 3%;
     --terminal-text: 150 20% 92%;
-    --terminal-prompt: 162 67% 50%;
+    --terminal-prompt: 44 100% 56%;
     --terminal-error: 0 72% 60%;
     --terminal-dim: 150 8% 55%;
 

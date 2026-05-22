@@ -185,15 +185,15 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
           />
         </>
       )}
-      <div className="flex items-center justify-between border-b border-border bg-card/60 px-4 py-2">
+      <div className="flex items-center justify-between border-b border-border bg-white px-4 py-2 text-black">
         <div className="flex items-center gap-2">
           {startedAt ? (
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="font-mono text-xs text-black">
               {resultIcon ? `${resultIcon} ` : ''}{running ? 'Running' : 'Finished'}
               {label ? ` ${label}` : ''} — {formatDuration((running ? now : (endedAt ?? now)) - startedAt)}
             </span>
           ) : (
-            <span className="font-mono text-xs text-muted-foreground">console</span>
+            <span className="font-mono text-xs text-black">console</span>
           )}
         </div>
         <div className="flex items-center gap-2">
