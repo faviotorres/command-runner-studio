@@ -254,22 +254,24 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
                     <ExternalLink className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>Open Report</TooltipContent>
+                <TooltipContent side="bottom">Open Report</TooltipContent>
               </Tooltip>
             )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={handleDownloadLogs}
-                  aria-label="Download Logs"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 text-black hover:bg-gray-200"
-                >
-                  <Download className="h-4 w-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>Download Logs</TooltipContent>
-            </Tooltip>
+            {!running && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={handleDownloadLogs}
+                    aria-label="Download Logs"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 text-black hover:bg-gray-200"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">Download Logs</TooltipContent>
+              </Tooltip>
+            )}
             {onStop ? (
               <Button
                 size="sm"
@@ -291,7 +293,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>Clear</TooltipContent>
+                <TooltipContent side="bottom">Clear</TooltipContent>
               </Tooltip>
             )}
           </TooltipProvider>
