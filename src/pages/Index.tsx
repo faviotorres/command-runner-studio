@@ -426,7 +426,6 @@ const Index = () => {
               <div className="shrink-0 mt-3 space-y-3">
                 {section === 'tests' && (
                   <section className="rounded-lg border border-border bg-card p-5">
-                  <section className="rounded-lg border border-border bg-card p-5">
                     <div className="flex items-center justify-between gap-3">
                       <div className="inline-flex h-9 items-center rounded-md bg-secondary p-1 font-mono">
                         {(['Local', 'Labs'] as const).map((opt) => (
