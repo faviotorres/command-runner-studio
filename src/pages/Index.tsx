@@ -337,6 +337,7 @@ const Index = () => {
                         test={t}
                         running={runs.tests.running}
                         active={runs.tests.activeId === t.id}
+                        result={data.results?.[t.id]}
                         onRun={() => run(t)}
                         onEdit={() => { setEditing(t); setDialogOpen(true); }}
                         onDelete={() => remove(t.id)}
