@@ -30,7 +30,10 @@ const DEFAULT_APK: ApkConfig = {
 };
 
 const DEFAULT_APPIUM: AppiumConfig = {
-  commandTemplate: 'npm run start-appium',
+  items: [
+    { id: 'appium', label: 'Start Appium', commandTemplate: 'npm run start-appium' },
+    { id: 'appium-restart', label: 'Restart Appium', commandTemplate: 'echo "restarting appium"\necho "done"' },
+  ],
 };
 
 type Section = 'tests' | 'apk' | 'appium';
