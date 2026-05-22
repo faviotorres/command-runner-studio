@@ -485,15 +485,8 @@ const Index = () => {
                     />
                   </>
                 )}
-                {section === 'appium' && (
-                  <ApkCommandSection
-                    title="Appium command"
-                    value={appium.commandTemplate}
-                    onChange={(v) => updateAppium(v)}
-                    hint="Runs in the configured working directory."
-                  />
-                )}
               </div>
+
             </>
           )}
         </ResizablePanel>
