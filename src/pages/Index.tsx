@@ -100,6 +100,18 @@ const Index = () => {
       .then(([t, s]) => {
         if (!t.apk) t.apk = DEFAULT_APK;
         if (!t.appium) t.appium = DEFAULT_APPIUM;
+        // Migrate legacy appium config (single commandTemplate) to items list
+        if (!t.appium.items || t.appium.items.length === 0) {
+          const legacy = t.appium.commandTemplate;
+          t.appium = {
+            items: legacy
+              ? [
+                  { id: 'appium', label: 'Start Appium', commandTemplate: legacy },
+                  { id: 'appium-restart', label: 'Restart Appium', commandTemplate: 'echo "restarting appium"\necho "done"' },
+                ]
+              : DEFAULT_APPIUM.items.map((it) => ({ ...it })),
+          };
+        }
         setData(t);
         setSettings(s);
       })
