@@ -395,6 +395,8 @@ const Index = () => {
                     <ApkRow
                       icon={<Download className="h-3.5 w-3.5" />}
                       label="Download"
+                      command={apk.download.commandTemplate}
+                      onCommandChange={(v) => updateApk('download', { commandTemplate: v })}
                       running={runs.apk.running}
                       active={runs.apk.activeId === 'apk-download'}
                       result={data.results?.['apk-download']}
@@ -403,6 +405,8 @@ const Index = () => {
                     <ApkRow
                       icon={<Upload className="h-3.5 w-3.5" />}
                       label="Upload"
+                      command={apk.upload.commandTemplate}
+                      onCommandChange={(v) => updateApk('upload', { commandTemplate: v })}
                       running={runs.apk.running}
                       active={runs.apk.activeId === 'apk-upload'}
                       result={data.results?.['apk-upload']}
