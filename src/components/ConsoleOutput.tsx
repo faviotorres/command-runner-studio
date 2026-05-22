@@ -196,7 +196,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
             <span className="font-mono text-xs text-black">console</span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="relative z-[2] flex items-center gap-2">
           {reportPath && (
             <Button
               size="sm"
