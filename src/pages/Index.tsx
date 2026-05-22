@@ -249,6 +249,11 @@ const Index = () => {
     startRun('appium', appium.commandTemplate, 'appium', 'appium');
   };
 
+  const runRestartAppium = () => {
+    if (!data || runs.appium.running) return;
+    startRun('appium', 'echo "restarting appium"\necho "done"', 'appium-restart', 'Restart Appium');
+  };
+
   const cancel = (sec: Section) => {
     const r = runs[sec];
     r.stop?.();
@@ -396,28 +401,54 @@ const Index = () => {
                 </TabsContent>
 
                 <TabsContent value="appium" className="mt-0">
-                  <div
-                    className={
-                      'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50 hover:bg-secondary' +
-                      (runs.appium.activeId === 'appium' ? ' border-primary/70 shadow-glow' : '')
-                    }
-                  >
-                    <Button
-                      size="sm"
-                      onClick={runAppium}
-                      disabled={runs.appium.running}
-                      className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                  <div className="space-y-2">
+                    <div
+                      className={
+                        'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50 hover:bg-secondary' +
+                        (runs.appium.activeId === 'appium' ? ' border-primary/70 shadow-glow' : '')
+                      }
                     >
-                      <Play className="h-3.5 w-3.5 fill-current" />
-                    </Button>
-                    <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
-                      <Cpu className="h-3.5 w-3.5" />
-                      <span>Start Appium</span>
+                      <Button
+                        size="sm"
+                        onClick={runAppium}
+                        disabled={runs.appium.running}
+                        className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                      >
+                        <Play className="h-3.5 w-3.5 fill-current" />
+                      </Button>
+                      <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
+                        <Cpu className="h-3.5 w-3.5" />
+                        <span>Start Appium</span>
+                      </div>
+                      <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
+                        {appium.commandTemplate}
+                      </code>
+                      <RunResultBadge result={data.results?.['appium']} />
                     </div>
-                    <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
-                      {appium.commandTemplate}
-                    </code>
-                    <RunResultBadge result={data.results?.['appium']} />
+                    <div
+                      className={
+                        'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50 hover:bg-secondary' +
+                        (runs.appium.activeId === 'appium-restart' ? ' border-primary/70 shadow-glow' : '')
+                      }
+                    >
+                      <Button
+                        size="sm"
+                        onClick={runRestartAppium}
+                        disabled={runs.appium.running}
+                        className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+                      >
+                        <Play className="h-3.5 w-3.5 fill-current" />
+                      </Button>
+                      <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
+                        <Cpu className="h-3.5 w-3.5" />
+                        <span>Restart Appium</span>
+                      </div>
+                      <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
+                        echo "restarting appium"
+                        echo "done"
+                      </code>
+                      <RunResultBadge result={data.results?.['appium-restart']} />
+                    </div>
                   </div>
                 </TabsContent>
               </div>
