@@ -14,8 +14,16 @@ export type ApkConfig = {
   upload: ApkAction;
 };
 
-export type AppiumConfig = {
+export type AppiumItem = {
+  id: string;
+  label: string;
   commandTemplate: string;
+};
+
+export type AppiumConfig = {
+  /** @deprecated kept for backward compat with older saved files */
+  commandTemplate?: string;
+  items: AppiumItem[];
 };
 
 export type RunResult = {

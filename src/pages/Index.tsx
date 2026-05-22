@@ -12,7 +12,7 @@ import {
   fetchTests, runCommand, saveTests,
   fetchSettings, saveSettings,
 } from '@/lib/api';
-import type { ApkConfig, AppiumConfig, LogLine, RunResult, Settings, Test, TestsFile } from '@/lib/types';
+import type { ApkConfig, AppiumConfig, AppiumItem, LogLine, RunResult, Settings, Test, TestsFile } from '@/lib/types';
 import { ConsoleOutput } from '@/components/ConsoleOutput';
 import { TestRow } from '@/components/TestRow';
 import { TestFormDialog } from '@/components/TestFormDialog';
@@ -30,7 +30,10 @@ const DEFAULT_APK: ApkConfig = {
 };
 
 const DEFAULT_APPIUM: AppiumConfig = {
-  commandTemplate: 'npm run start-appium',
+  items: [
+    { id: 'appium', label: 'Start Appium', commandTemplate: 'npm run start-appium' },
+    { id: 'appium-restart', label: 'Restart Appium', commandTemplate: 'echo "restarting appium"\necho "done"' },
+  ],
 };
 
 type Section = 'tests' | 'apk' | 'appium';
@@ -97,6 +100,18 @@ const Index = () => {
       .then(([t, s]) => {
         if (!t.apk) t.apk = DEFAULT_APK;
         if (!t.appium) t.appium = DEFAULT_APPIUM;
+        // Migrate legacy appium config (single commandTemplate) to items list
+        if (!t.appium.items || t.appium.items.length === 0) {
+          const legacy = t.appium.commandTemplate;
+          t.appium = {
+            items: legacy
+              ? [
+                  { id: 'appium', label: 'Start Appium', commandTemplate: legacy },
+                  { id: 'appium-restart', label: 'Restart Appium', commandTemplate: 'echo "restarting appium"\necho "done"' },
+                ]
+              : DEFAULT_APPIUM.items.map((it) => ({ ...it })),
+          };
+        }
         setData(t);
         setSettings(s);
       })
@@ -159,9 +174,10 @@ const Index = () => {
     persist({ ...data, apk: nextApk });
   };
 
-  const updateAppium = (commandTemplate: string) => {
+  const updateAppiumItem = (id: string, commandTemplate: string) => {
     if (!data) return;
-    persist({ ...data, appium: { commandTemplate } });
+    const items = appium.items.map((it) => (it.id === id ? { ...it, commandTemplate } : it));
+    persist({ ...data, appium: { ...appium, items } });
   };
 
   const appendLine = (sec: Section, kind: LogLine['kind'], text: string) =>
@@ -244,14 +260,9 @@ const Index = () => {
     startRun('apk', action.commandTemplate, `apk-${kind}`, `apk-${kind}`);
   };
 
-  const runAppium = () => {
+  const runAppiumItem = (item: AppiumItem) => {
     if (!data || runs.appium.running) return;
-    startRun('appium', appium.commandTemplate, 'appium', 'appium');
-  };
-
-  const runRestartAppium = () => {
-    if (!data || runs.appium.running) return;
-    startRun('appium', 'echo "restarting appium"\necho "done"', 'appium-restart', 'Restart Appium');
+    startRun('appium', item.commandTemplate, item.id, item.label);
   };
 
   const cancel = (sec: Section) => {
@@ -402,53 +413,17 @@ const Index = () => {
 
                 <TabsContent value="appium" className="mt-0">
                   <div className="space-y-2">
-                    <div
-                      className={
-                        'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50 hover:bg-secondary' +
-                        (runs.appium.activeId === 'appium' ? ' border-primary/70 shadow-glow' : '')
-                      }
-                    >
-                      <Button
-                        size="sm"
-                        onClick={runAppium}
-                        disabled={runs.appium.running}
-                        className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
-                      >
-                        <Play className="h-3.5 w-3.5 fill-current" />
-                      </Button>
-                      <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
-                        <Cpu className="h-3.5 w-3.5" />
-                        <span>Start Appium</span>
-                      </div>
-                      <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
-                        {appium.commandTemplate}
-                      </code>
-                      <RunResultBadge result={data.results?.['appium']} />
-                    </div>
-                    <div
-                      className={
-                        'flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50 hover:bg-secondary' +
-                        (runs.appium.activeId === 'appium-restart' ? ' border-primary/70 shadow-glow' : '')
-                      }
-                    >
-                      <Button
-                        size="sm"
-                        onClick={runRestartAppium}
-                        disabled={runs.appium.running}
-                        className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
-                      >
-                        <Play className="h-3.5 w-3.5 fill-current" />
-                      </Button>
-                      <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
-                        <Cpu className="h-3.5 w-3.5" />
-                        <span>Restart Appium</span>
-                      </div>
-                      <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
-                        echo "restarting appium"
-                        echo "done"
-                      </code>
-                      <RunResultBadge result={data.results?.['appium-restart']} />
-                    </div>
+                    {appium.items.map((item) => (
+                      <AppiumItemRow
+                        key={item.id}
+                        item={item}
+                        running={runs.appium.running}
+                        active={runs.appium.activeId === item.id}
+                        result={data.results?.[item.id]}
+                        onRun={() => runAppiumItem(item)}
+                        onChange={(v) => updateAppiumItem(item.id, v)}
+                      />
+                    ))}
                   </div>
                 </TabsContent>
               </div>
@@ -510,15 +485,8 @@ const Index = () => {
                     />
                   </>
                 )}
-                {section === 'appium' && (
-                  <ApkCommandSection
-                    title="Appium command"
-                    value={appium.commandTemplate}
-                    onChange={(v) => updateAppium(v)}
-                    hint="Runs in the configured working directory."
-                  />
-                )}
               </div>
+
             </>
           )}
         </ResizablePanel>
@@ -615,4 +583,58 @@ function ApkCommandSection({
   );
 }
 
+type AppiumItemRowProps = {
+  item: AppiumItem;
+  running: boolean;
+  active: boolean;
+  result?: RunResult;
+  onRun: () => void;
+  onChange: (v: string) => void;
+};
+
+function AppiumItemRow({ item, running, active, result, onRun, onChange }: AppiumItemRowProps) {
+  return (
+    <div
+      className={
+        'rounded-md border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/50' +
+        (active ? ' border-primary/70 shadow-glow' : '')
+      }
+    >
+      <div className="flex items-center gap-3">
+        <Button
+          size="sm"
+          onClick={onRun}
+          disabled={running}
+          className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
+        >
+          {active && running ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Play className="h-3.5 w-3.5 fill-current" />
+          )}
+        </Button>
+        <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
+          <Cpu className="h-3.5 w-3.5" />
+          <span>{item.label}</span>
+        </div>
+        <div className="ml-auto">
+          <RunResultBadge result={result} />
+        </div>
+      </div>
+      <div className="mt-2 flex items-start gap-2">
+        <span className="mt-2 font-mono text-primary">$</span>
+        <Textarea
+          value={item.commandTemplate}
+          onChange={(e) => onChange(e.target.value)}
+          rows={Math.min(8, Math.max(2, item.commandTemplate.split('\n').length))}
+          className="resize-y font-mono text-xs bg-gray-100"
+          spellCheck={false}
+          placeholder="echo 'hello'"
+        />
+      </div>
+    </div>
+  );
+}
+
 export default Index;
+
