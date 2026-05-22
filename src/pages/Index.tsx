@@ -171,9 +171,21 @@ const Index = () => {
     });
   };
 
+  const detectResult = (buf: string): boolean | null => {
+    // Scan from the end, matching the same logic ConsoleOutput uses for the header.
+    const lines = buf.split('\n');
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const t = lines[i];
+      if (/test\s+passed/i.test(t)) return true;
+      if (/test\s+failed/i.test(t)) return false;
+    }
+    return null;
+  };
+
   const startRun = (sec: Section, cmd: string, id: string, label: string, stdin?: string) => {
     const cwd = settings?.workingDir?.trim() || '';
     let cancelled = false;
+    let buffer = '';
     updateRun(sec, {
       lines: [],
       running: true,
@@ -188,17 +200,18 @@ const Index = () => {
     if (stdin != null) appendLine(sec, 'info', `[stdin] ${stdin}`);
 
     const close = runCommand(cmd, cwd, {
-      onStdout: (c) => appendLine(sec, 'stdout', c),
-      onStderr: (c) => appendLine(sec, 'stderr', c),
+      onStdout: (c) => { buffer += c + '\n'; appendLine(sec, 'stdout', c); },
+      onStderr: (c) => { buffer += c + '\n'; appendLine(sec, 'stderr', c); },
       onEnd: (code) => {
         appendLine(sec, 'end', `\n[process exited with code ${code}]`);
         updateRun(sec, { running: false, stop: null, endedAt: Date.now() });
-        if (!cancelled) saveResult(id, code === 0);
+        if (cancelled) return;
+        const result = detectResult(buffer);
+        if (result !== null) saveResult(id, result);
       },
       onError: (err) => {
         appendLine(sec, 'stderr', err);
         updateRun(sec, { running: false, stop: null, endedAt: Date.now() });
-        if (!cancelled) saveResult(id, false);
       },
     }, stdin);
     updateRun(sec, { stop: () => { cancelled = true; close(); } });
