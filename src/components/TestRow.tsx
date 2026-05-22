@@ -1,4 +1,4 @@
-import { Play, Pencil, Trash2, Tag } from 'lucide-react';
+import { Play, Pencil, Trash2, Tag, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { RunResult, Test } from '@/lib/types';
@@ -29,7 +29,11 @@ export function TestRow({ test, running, active, result, onRun, onEdit, onDelete
         disabled={running}
         className="h-8 shrink-0 bg-primary px-3 font-mono text-primary-foreground hover:bg-primary/90 disabled:opacity-40"
       >
-        <Play className="h-3.5 w-3.5 fill-current" />
+        {active && running ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <Play className="h-3.5 w-3.5 fill-current" />
+        )}
       </Button>
 
       <div className="min-w-0 flex-1">
