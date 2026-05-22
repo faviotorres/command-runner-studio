@@ -496,7 +496,7 @@ function ApkCommandSection({
         <Input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="font-mono text-sm shadow-[0_1px_2px_rgba(0,1,60,0.06)]"
+          className="font-mono text-sm bg-gray-100"
           spellCheck={false}
         />
       </div>
