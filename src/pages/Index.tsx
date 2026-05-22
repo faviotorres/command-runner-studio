@@ -426,9 +426,29 @@ const Index = () => {
               <div className="shrink-0 mt-3 space-y-3">
                 {section === 'tests' && (
                   <section className="rounded-lg border border-border bg-card p-5">
-                    <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                      Command
-                    </Label>
+                  <section className="rounded-lg border border-border bg-card p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="inline-flex h-9 items-center rounded-md bg-secondary p-1 font-mono">
+                        {(['Local', 'Labs'] as const).map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => handleTestEnvChange(opt)}
+                            className={
+                              'inline-flex h-7 items-center rounded-sm px-3 text-xs uppercase tracking-wider transition-colors ' +
+                              (testEnv === opt
+                                ? 'bg-background text-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground')
+                            }
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                      <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                        Command
+                      </Label>
+                    </div>
                     <div className="mt-2 flex items-start gap-2">
                       <span className="mt-2 font-mono text-primary">$</span>
                       <Textarea
