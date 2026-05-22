@@ -475,20 +475,6 @@ const Index = () => {
                     </p>
                   </section>
                 )}
-                {section === 'apk' && (
-                  <>
-                    <ApkCommandSection
-                      title="Download command"
-                      value={apk.download.commandTemplate}
-                      onChange={(v) => updateApk('download', { commandTemplate: v })}
-                    />
-                    <ApkCommandSection
-                      title="Upload command"
-                      value={apk.upload.commandTemplate}
-                      onChange={(v) => updateApk('upload', { commandTemplate: v })}
-                    />
-                  </>
-                )}
               </div>
 
             </>
