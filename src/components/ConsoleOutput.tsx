@@ -165,6 +165,30 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
     }
   };
 
+  const handleDownloadLogs = () => {
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:T]/g, '-').slice(0, 19);
+    const tag = label || 'console';
+    const filename = `${tag}_${timestamp}.txt`;
+
+    const cleanLines = lines.map((l) =>
+      l.text
+        .replace(/\x1b\[[0-9;?]*[a-zA-Z]/g, '')
+        .replace(/\[([0-9;]*)m/g, '')
+    );
+    const content = cleanLines.join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-terminal-bg">
       <div className="relative flex items-center justify-between border-b border-border bg-white px-4 py-2 text-black">
