@@ -427,6 +427,9 @@ const Index = () => {
                 {section === 'tests' && (
                   <section className="rounded-lg border border-border bg-card p-5">
                     <div className="flex items-center justify-between gap-3">
+                      <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                        Command
+                      </Label>
                       <div className="inline-flex h-9 items-center rounded-md bg-secondary p-1 font-mono">
                         {(['Local', 'Labs'] as const).map((opt) => (
                           <button
@@ -444,9 +447,6 @@ const Index = () => {
                           </button>
                         ))}
                       </div>
-                      <Label htmlFor="cmd" className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                        Command
-                      </Label>
                     </div>
                     <div className="mt-2 flex items-start gap-2">
                       <span className="mt-2 font-mono text-primary">$</span>
