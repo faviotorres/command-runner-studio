@@ -93,7 +93,7 @@ export function TestRow({ test, running, active, result, onRun, onEdit, onDelete
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onEdit}>
+          <DropdownMenuItem onClick={onEdit} className="focus:bg-secondary focus:text-foreground">
             <Pencil className="mr-2 h-3.5 w-3.5" />
             Edit
           </DropdownMenuItem>
