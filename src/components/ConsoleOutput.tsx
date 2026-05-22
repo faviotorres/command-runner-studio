@@ -190,7 +190,12 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
           {startedAt ? (
             <span className="font-mono text-xs text-black">
               {resultIcon ? `${resultIcon} ` : ''}{running ? 'Running' : 'Finished'}
-              {label ? ` ${label}` : ''} — {formatDuration((running ? now : (endedAt ?? now)) - startedAt)}
+              {label ? (
+                <>
+                  {' '}<span className="text-primary">{label}</span>
+                </>
+              ) : ''}
+              {' '}— {formatDuration((running ? now : (endedAt ?? now)) - startedAt)}
             </span>
           ) : (
             <span className="font-mono text-xs text-black">console</span>
