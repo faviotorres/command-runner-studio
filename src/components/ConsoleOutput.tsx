@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { LogLine } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Square, Trash2 } from 'lucide-react';
+import { Download, ExternalLink, Square, Trash2 } from 'lucide-react';
 import { openPath } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
