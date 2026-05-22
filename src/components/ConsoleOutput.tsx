@@ -242,7 +242,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
         </div>
         <div className="relative z-[2] flex items-center gap-1.5">
           <TooltipProvider delayDuration={0}>
-            {reportPath && (
+            {!running && endedAt && reportPath && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -257,7 +257,7 @@ export function ConsoleOutput({ lines, running, onClear, onStop, label, startedA
                 <TooltipContent side="bottom">Open Report</TooltipContent>
               </Tooltip>
             )}
-            {!running && (
+            {!running && endedAt && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
