@@ -292,7 +292,7 @@ const Index = () => {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="filter by name or tag…"
-                        className="pl-9 font-mono shadow-[0_1px_2px_rgba(0,1,60,0.06)]"
+                        className="pl-9 font-mono bg-gray-100"
                       />
                     </div>
                     <Button
