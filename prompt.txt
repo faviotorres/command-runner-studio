@@ -1,0 +1,110 @@
+Build an app called **R2Run** using Vite + React 18 + TypeScript + Tailwind CSS v3 + shadcn/ui, React Router, @tanstack/react-query, and lucide-react icons.
+
+**Backend / Local Helper**
+- Create a local Node helper script at `server/server.mjs` that uses `child_process.spawn` to execute shell commands.
+- It must expose a CORS-open API on a configurable port (default `8787`) and be wired into the Vite dev server via a custom Vite plugin (`server/vite-plugin.mjs`).
+- Endpoints:
+  - `GET /api/tests` and `PUT /api/tests` — read/write the full tests JSON.
+  - `GET /api/settings` and `PUT /api/settings` — read/write the full settings JSON.
+  - `GET /api/run?cmd=<command>&cwd=<workingDir>&stdin=<optionalStdin>` — returns an SSE stream with events: `start`, `stdout`, `stderr`, and `end` (with `exitCode` and `lastTimestamp`).
+  - `GET /api/open?path=<filePath>` — opens a file or directory with the OS default opener.
+- Auto-save on `PUT` should persist to `server/tests.json` and `server/settings.json`.
+- Write a `server/README.md` that includes a security warning that the helper runs arbitrary shell commands and should never be exposed to the public internet.
+
+**Persistence**
+- `tests.json` stores tests with fields: `id`, `name`, `command`, `tags`, `lastRun` (`{ exitCode, timestamp, durationMs }`).
+- `settings.json` stores: `workingDir`, `tests`, `appium`, `apk`.
+- On the client, load both files via `fetch`. PUTs should merge field-by-field so partial updates work.
+- All edits (test names, tags, commands, APK commands, Appium item commands, working directory, etc.) must auto-save to these JSON files.
+
+**Theme / Design System**
+- Theme name: R2Run.
+- Primary brand colors:
+  - True Blue: `#0053E2` (HSL ~214 100% 45%)
+  - Spark Yellow: `#FFC220` (HSL ~44 100% 56%)
+- All colors must be defined as HSL CSS variables in `src/index.css` and mapped in `tailwind.config.ts` so every component uses semantic tokens (e.g. `--background`, `--foreground`, `--primary`, `--primary-foreground`, `--accent`, `--muted`, `--terminal-bg`, `--terminal-text`, `--terminal-prompt`, `--terminal-error`).
+- **Dark terminal scope**:
+  - `--terminal-bg: 0 0% 3%`
+  - `--terminal-text: 150 20% 92%`
+  - `--terminal-prompt: 44 100% 56%` (yellow `$`)
+  - `--terminal-error: 0 72% 60%`
+- Toolbar scope should invert the palette: blue background with yellow as the primary accent.
+- Fonts: JetBrains Mono for monospace elements (title, terminal, command inputs) and Inter for UI body text.
+- Use `cva` (class-variance-authority) for component variants (buttons, badges, inputs).
+
+**Layout**
+- Single-page app. The main layout uses a `ResizablePanelGroup` with two panels:
+  - Left panel: 25–50% width, contains the toolbar + tabbed content area.
+  - Right panel: 50–75% width, contains the live console output.
+- Toolbar is a 3-column bar:
+  - Left: Terminal icon + the text "r2run" in JetBrains Mono.
+  - Center: Tab buttons: APPIUM / APK / TESTS. The active tab has a yellow underline indicator.
+  - Right: Working-directory input with an "Open" button and a red `AlertTriangle` icon if the local helper is unreachable.
+
+**Sections / Tabs**
+1. **TESTS**
+   - A search/filter input at the top.
+   - "Add Test" button opens a `TestFormDialog` (shadcn Dialog) with fields for Name and Tag.
+   - Tests render as cards using a `TestRow` component. Each card shows:
+     - Play button (runs the test).
+     - Test name.
+     - Tag row (colored tags; tags are editable inline).
+     - `RunResultBadge`: shows last run status (success/failure/unknown) and a rounded-rectangle time chip (e.g. "just now", "3 mins ago", "1 day ago", then localized date). Time chip live-updates every 60 seconds and on window focus/visibilitychange.
+     - A `MoreVertical` dropdown menu with Edit / Duplicate / Delete.
+   - Each test card should have a subtle hover lift animation.
+
+2. **APK**
+   - Two static rows: "Download APK" and "Upload APK".
+   - Each row is an `ApkRow` component with:
+     - Run button.
+     - Label.
+     - Inline multiline `Textarea` (resize-y, rows based on line count, `spellCheck={false}`) for the per-item command. The command must be editable and persisted in `settings.json` under `apk.items[].commandTemplate`.
+     - `RunResultBadge` below the textarea showing last run status + time chip.
+
+3. **APPIUM**
+   - Dynamic list of Appium items stored in `settings.json` under `appium.items: { id, label, commandTemplate }[]`.
+   - Each item renders as an `AppiumItemRow` with:
+     - Run button.
+     - Label.
+     - Inline multiline `Textarea` for the command, editable and persisted.
+     - `RunResultBadge`.
+   - On first load, migrate legacy `appium.commandTemplate` (single string) into the `items` array format (create default items for "Start Appium" and "Restart Appium").
+
+**Console / Output Panel**
+- Full-height dark panel on the right side of the resizable split.
+- Background: animated diagonal stripe pattern (`stripes-animate`) using CSS keyframes.
+- Component: `ConsoleOutput`.
+- Must include an ANSI color parser supporting:
+  - 16 standard colors (black, red, green, yellow, blue, magenta, cyan, white and their bright variants).
+  - xterm 256 colors.
+  - 24-bit truecolor (`38;2;R;G;B` / `48;2;R;G;B`).
+- Render each line as a `<div>` with inline color spans. Lines should not wrap (horizontal scroll).
+- Blinking cursor at the bottom of the output.
+- Live-updating duration display while a run is active.
+- Clear distinction between stdout and stderr styling (e.g. stderr slightly more intense or tinted red).
+
+**Run Pipeline**
+- When a user clicks Play on any test, APK item, or Appium item:
+  1. Build the command string from the item's `commandTemplate`.
+  2. Open an `EventSource` to `/api/run?cmd=...&cwd=...`.
+  3. Stream stdout/stderr into the Console panel in real time.
+  4. On `end` event, save a `RunResult` object (`{ exitCode, timestamp, durationMs }`) back into `tests.json` / `settings.json` for that item id.
+  5. Update the `RunResultBadge` immediately.
+
+**Loading / Indicators**
+- Spinning loader on the Play button while a command is running.
+- A small pulsing dot in the console header when a stream is active.
+- Skeleton loaders while `tests.json` / `settings.json` are being fetched for the first time.
+
+**Buttons & Badges**
+- Play buttons: circle with `Play` icon, hover scale, active color change.
+- Tags: small rounded pills, distinct colors per tag (generated from a deterministic hash of the tag name).
+- `RunResultBadge`: rounded rectangle chip showing relative time, live-updating. Color-coded border: green for success, red for failure, gray for unknown.
+- Yellow primary accent (`#FFC220`) on all primary actions.
+
+**Other Details**
+- Use `Sonner` (`<Toaster />`) for toast notifications on save errors or successful runs.
+- Include a 404 fallback route (`/not-found`) with a minimal message.
+- All inputs, textareas, and buttons must have clear focus rings using the primary blue color.
+- Animations: hover lifts on cards, smooth underline transition on tab switches, fade-in for console text appends, and the diagonal stripe background animation.
+- The project should be named **R2Run** everywhere (title tag, navbar, file comments, package name if applicable).
