@@ -12,10 +12,11 @@ import {
   fetchTests, runCommand, saveTests,
   fetchSettings, saveSettings,
 } from '@/lib/api';
-import type { ApkConfig, AppiumConfig, LogLine, Settings, Test, TestsFile } from '@/lib/types';
+import type { ApkConfig, AppiumConfig, LogLine, RunResult, Settings, Test, TestsFile } from '@/lib/types';
 import { ConsoleOutput } from '@/components/ConsoleOutput';
 import { TestRow } from '@/components/TestRow';
 import { TestFormDialog } from '@/components/TestFormDialog';
+import { RunResultBadge } from '@/components/RunResultBadge';
 
 const DEFAULT_APK: ApkConfig = {
   download: {
@@ -43,6 +44,7 @@ type RunState = {
   startedAt: number | null;
   endedAt: number | null;
   stop: (() => void) | null;
+  cancelled: boolean;
 };
 
 const initialRun: RunState = {
@@ -53,6 +55,7 @@ const initialRun: RunState = {
   startedAt: null,
   endedAt: null,
   stop: null,
+  cancelled: false,
 };
 
 const Index = () => {
@@ -154,8 +157,23 @@ const Index = () => {
       lines: [...r.lines, { id: crypto.randomUUID(), kind, text, at: Date.now() }],
     }));
 
+  const saveResult = (id: string, success: boolean) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const next: TestsFile = {
+        ...prev,
+        results: { ...(prev.results ?? {}), [id]: { at: Date.now(), success } },
+      };
+      saveTests(next).catch((e) =>
+        toast({ title: 'Save failed', description: String(e), variant: 'destructive' }),
+      );
+      return next;
+    });
+  };
+
   const startRun = (sec: Section, cmd: string, id: string, label: string, stdin?: string) => {
     const cwd = settings?.workingDir?.trim() || '';
+    let cancelled = false;
     updateRun(sec, {
       lines: [],
       running: true,
@@ -163,6 +181,7 @@ const Index = () => {
       activeLabel: label,
       startedAt: Date.now(),
       endedAt: null,
+      cancelled: false,
     });
     if (cwd) appendLine(sec, 'info', `cwd: ${cwd}`);
     appendLine(sec, 'info', `$ ${cmd}`);
@@ -174,13 +193,15 @@ const Index = () => {
       onEnd: (code) => {
         appendLine(sec, 'end', `\n[process exited with code ${code}]`);
         updateRun(sec, { running: false, stop: null, endedAt: Date.now() });
+        if (!cancelled) saveResult(id, code === 0);
       },
       onError: (err) => {
         appendLine(sec, 'stderr', err);
         updateRun(sec, { running: false, stop: null, endedAt: Date.now() });
+        if (!cancelled) saveResult(id, false);
       },
     }, stdin);
-    updateRun(sec, { stop: () => close });
+    updateRun(sec, { stop: () => { cancelled = true; close(); } });
   };
 
   const run = (test: Test) => {
@@ -317,6 +338,7 @@ const Index = () => {
                         test={t}
                         running={runs.tests.running}
                         active={runs.tests.activeId === t.id}
+                        result={data.results?.[t.id]}
                         onRun={() => run(t)}
                         onEdit={() => { setEditing(t); setDialogOpen(true); }}
                         onDelete={() => remove(t.id)}
@@ -332,6 +354,7 @@ const Index = () => {
                       label="Download"
                       running={runs.apk.running}
                       active={runs.apk.activeId === 'apk-download'}
+                      result={data.results?.['apk-download']}
                       onRun={() => runApk('download')}
                     />
                     <ApkRow
@@ -339,6 +362,7 @@ const Index = () => {
                       label="Upload"
                       running={runs.apk.running}
                       active={runs.apk.activeId === 'apk-upload'}
+                      result={data.results?.['apk-upload']}
                       onRun={() => runApk('upload')}
                     />
                   </div>
@@ -366,6 +390,7 @@ const Index = () => {
                     <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
                       {appium.commandTemplate}
                     </code>
+                    <RunResultBadge result={data.results?.['appium']} />
                   </div>
                 </TabsContent>
               </div>
@@ -456,10 +481,11 @@ type ApkRowProps = {
   label: string;
   running: boolean;
   active: boolean;
+  result?: RunResult;
   onRun: () => void;
 };
 
-function ApkRow({ icon, label, running, active, onRun }: ApkRowProps) {
+function ApkRow({ icon, label, running, active, result, onRun }: ApkRowProps) {
   return (
     <div
       className={
@@ -478,6 +504,9 @@ function ApkRow({ icon, label, running, active, onRun }: ApkRowProps) {
       <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-primary/80">
         {icon}
         <span>{label}</span>
+      </div>
+      <div className="ml-auto">
+        <RunResultBadge result={result} />
       </div>
     </div>
   );

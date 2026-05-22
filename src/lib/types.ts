@@ -18,11 +18,17 @@ export type AppiumConfig = {
   commandTemplate: string;
 };
 
+export type RunResult = {
+  at: number;
+  success: boolean;
+};
+
 export type TestsFile = {
   commandTemplate: string;
   tests: Test[];
   apk?: ApkConfig;
   appium?: AppiumConfig;
+  results?: Record<string, RunResult>;
 };
 
 export type Settings = {
