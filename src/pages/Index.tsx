@@ -260,14 +260,9 @@ const Index = () => {
     startRun('apk', action.commandTemplate, `apk-${kind}`, `apk-${kind}`);
   };
 
-  const runAppium = () => {
+  const runAppiumItem = (item: AppiumItem) => {
     if (!data || runs.appium.running) return;
-    startRun('appium', appium.commandTemplate, 'appium', 'appium');
-  };
-
-  const runRestartAppium = () => {
-    if (!data || runs.appium.running) return;
-    startRun('appium', 'echo "restarting appium"\necho "done"', 'appium-restart', 'Restart Appium');
+    startRun('appium', item.commandTemplate, item.id, item.label);
   };
 
   const cancel = (sec: Section) => {
