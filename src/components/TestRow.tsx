@@ -1,18 +1,20 @@
 import { Play, Pencil, Trash2, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { Test } from '@/lib/types';
+import type { RunResult, Test } from '@/lib/types';
+import { RunResultBadge } from './RunResultBadge';
 
 type Props = {
   test: Test;
   running: boolean;
   active: boolean;
+  result?: RunResult;
   onRun: () => void;
   onEdit: () => void;
   onDelete: () => void;
 };
 
-export function TestRow({ test, running, active, onRun, onEdit, onDelete }: Props) {
+export function TestRow({ test, running, active, result, onRun, onEdit, onDelete }: Props) {
   return (
     <div
       className={cn(
@@ -40,6 +42,8 @@ export function TestRow({ test, running, active, onRun, onEdit, onDelete }: Prop
         </div>
       </div>
 
+      <RunResultBadge result={result} />
+
       <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <Button variant="ghost" size="icon" disabled={running} className="h-7 w-7 hover:bg-border hover:text-foreground disabled:opacity-40" onClick={onEdit}>
           <Pencil className="h-3.5 w-3.5" />
@@ -51,3 +55,4 @@ export function TestRow({ test, running, active, onRun, onEdit, onDelete }: Prop
     </div>
   );
 }
+
