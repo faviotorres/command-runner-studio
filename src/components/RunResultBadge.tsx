@@ -32,6 +32,13 @@ function formatDuration(ms?: number) {
 }
 
 export function RunResultBadge({ result }: { result?: RunResult }) {
+  const [, tick] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => tick((n) => n + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
   if (!result) return null;
   return (
     <div
@@ -39,7 +46,7 @@ export function RunResultBadge({ result }: { result?: RunResult }) {
       title={`Last run: ${new Date(result.at).toLocaleString()} — ${result.success ? 'passed' : 'failed'}${result.durationMs != null ? ` in ${formatDuration(result.durationMs)}` : ''}`}
     >
       <span aria-hidden>{result.success ? '✅' : '❌'}</span>
-      <span>{formatWhen(result.at)}</span>
+      <span>{formatRelative(result.at)}</span>
       {result.durationMs != null && (
         <span className="text-muted-foreground/60">· {formatDuration(result.durationMs)}</span>
       )}
