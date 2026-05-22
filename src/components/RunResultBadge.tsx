@@ -58,7 +58,9 @@ export function RunResultBadge({ result }: { result?: RunResult }) {
       <span aria-hidden>{result.success ? '✅' : '❌'}</span>
       <span>{formatRelative(result.at)}</span>
       {result.durationMs != null && (
-        <span className="text-muted-foreground/60">· {formatDuration(result.durationMs)}</span>
+        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] leading-none text-muted-foreground">
+          {formatDuration(result.durationMs)}
+        </span>
       )}
     </div>
   );
