@@ -43,6 +43,7 @@ type RunState = {
   startedAt: number | null;
   endedAt: number | null;
   stop: (() => void) | null;
+  cancelled: boolean;
 };
 
 const initialRun: RunState = {
@@ -53,6 +54,7 @@ const initialRun: RunState = {
   startedAt: null,
   endedAt: null,
   stop: null,
+  cancelled: false,
 };
 
 const Index = () => {
